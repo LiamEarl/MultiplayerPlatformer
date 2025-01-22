@@ -1,4 +1,4 @@
-package Client;
+package Client.Game;
 import Server.NetworkCommunicator;
 
 import java.io.*;
