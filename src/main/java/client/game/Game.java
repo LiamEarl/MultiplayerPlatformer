@@ -1,15 +1,13 @@
-package Client.Game;
-import Client.PhysicalObjects.Obstacle;
-import Client.PhysicalObjects.Player;
-import Client.PhysicalObjects.GameObject;
-import Client.PhysicalObjects.Vector2D;
+package client.game;
+import client.model.Obstacle;
+import client.model.Player;
+import client.model.GameObject;
+import client.model.Vector2D;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import static java.lang.System.currentTimeMillis;
 
 public class Game extends JPanel implements KeyListener {
 

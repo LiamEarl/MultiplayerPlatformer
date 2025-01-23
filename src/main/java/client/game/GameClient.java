@@ -1,13 +1,12 @@
-package Client.Game;
-import Client.PhysicalObjects.Obstacle;
-import Client.PhysicalObjects.Player;
-import Client.PhysicalObjects.GameObject;
+package client.game;
+import client.model.Obstacle;
+import client.model.Player;
+import client.model.GameObject;
 
 import java.awt.*;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class GameClient {
 

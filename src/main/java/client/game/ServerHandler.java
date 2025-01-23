@@ -1,14 +1,11 @@
-package Client.Game;
-import Client.PhysicalObjects.GameObject;
-import Client.PhysicalObjects.Player;
-import Server.NetworkCommunicator;
+package client.game;
+import client.model.GameObject;
+import client.model.Player;
+import server.NetworkCommunicator;
 
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-
-import static java.lang.System.currentTimeMillis;
 
 class ServerHandler extends NetworkCommunicator implements Runnable {
     private Socket serverSocket;

@@ -1,4 +1,4 @@
-package Client.PhysicalObjects;
+package client.model;
 
 public class Vector2D {
     private float x, y;

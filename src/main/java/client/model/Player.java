@@ -1,4 +1,4 @@
-package Client.PhysicalObjects;
+package client.model;
 
 import java.awt.*;
 
