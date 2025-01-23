@@ -1,6 +1,6 @@
-package Server;
+package server;
 
-import Client.PhysicalObjects.Vector2D;
+import client.model.Vector2D;
 
 import java.io.*;
 import java.net.Socket;
