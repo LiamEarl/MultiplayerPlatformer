@@ -1,39 +1,54 @@
 package Client.Game;
 import Client.PhysicalObjects.Obstacle;
 import Client.PhysicalObjects.Player;
-import Client.PhysicalObjects.Renderable;
+import Client.PhysicalObjects.GameObject;
 
 import java.awt.*;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class GameClient {
 
-    private static void handleServerConnection() throws IOException {
+    private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
         Socket serverSocket = new Socket("localhost", 8888); // Server IP and port
         System.out.println("Server Connected At IP: " + serverSocket.getLocalSocketAddress());
-        ServerHandler serverHandler = new ServerHandler(serverSocket);
+        ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
         Thread serverThread = new Thread(serverHandler);
         serverThread.start();
+        return serverHandler;
     }
 
     public static void main(String[] args) {
         try {
-            handleServerConnection();
-            Player player = new Player(200, 100, new Color(255, 0, 0));
-            ArrayList<Renderable> toRender = new ArrayList<Renderable>();
-            Obstacle testObstacle = new Obstacle(500, 600, 300, 20, new Color(0, 255, 0));
+            GameObject[] gameObjects = new GameObject[100];
 
-            toRender.add(player);
-            toRender.add(testObstacle);
+            ServerHandler serverConnection = null;
+            try {
+                serverConnection = handleServerConnection(gameObjects);
+            } catch (ConnectException e) {
+                System.out.println("Failed To Connect To The Server");
+            }
 
-            Game game = new Game(player, toRender);
+            gameObjects[9] = new Obstacle(-100, 800, 600, 200, new Color(14, 3, 46));
+            gameObjects[10] = new Obstacle(0, 0, 50, 1000, new Color(14, 3, 46));
+            gameObjects[11] = new Obstacle(650, 750, 100, 100, new Color(14, 3, 46));
+            gameObjects[12] = new Obstacle(875, 700, 100, 100, new Color(14, 3, 46));
+
+            Game game = null;
 
             while(true) {
+                if(game == null && serverConnection.getPlayerId() != -1 && serverConnection != null)
+                    game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
+
+                if(game == null) continue;
+
                 game.renderScene();
                 game.handleKeyInputs();
-                player.update();
+                ((Player) gameObjects[serverConnection.getPlayerId()]).update();
+                game.checkPlayerCollisions();
+
                 Thread.sleep(16);
             }
         }catch (Exception e) {

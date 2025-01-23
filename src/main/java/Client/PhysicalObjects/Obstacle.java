@@ -2,7 +2,7 @@ package Client.PhysicalObjects;
 
 import java.awt.*;
 
-public class Obstacle implements Renderable {
+public class Obstacle implements GameObject {
     private Vector2D pos;
     private Vector2D dim;
     private Color col;
