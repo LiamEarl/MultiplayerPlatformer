@@ -1,27 +1,25 @@
 package server;
 
-import client.model.Player;
-import client.model.PlayerData;
+import client.model.EntityData;
 import client.model.Vector2D;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 class ClientHandler extends NetworkCommunicator implements Runnable {
     private Socket clientSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private PlayerData pData;
-    private CopyOnWriteArrayList<PlayerData> updates;
+    private EntityData pData;
+    private CopyOnWriteArrayList<EntityData> updates;
 
     public ClientHandler(Socket clientSocket, int clientId) throws IOException {
         this.updates = new CopyOnWriteArrayList<>();
         this.clientSocket = clientSocket;
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
-        this.pData = new PlayerData(new Vector2D(100, 650), clientId);
+        this.pData = new EntityData(new Vector2D(100, 650), clientId);
         uploadToClient(this.pData);
     }
 
@@ -33,9 +31,9 @@ class ClientHandler extends NetworkCommunicator implements Runnable {
                 //Thread.sleep(16);
                 try {
                     Object fromClient = this.in.readObject();
-                    if (fromClient instanceof PlayerData) {
+                    if (fromClient instanceof EntityData) {
                         //System.out.println("Receiving Client Info" + ((PlayerData) fromClient).getPos().getX() + " " + ((PlayerData) fromClient).getPos().getY());
-                        this.pData = (PlayerData) fromClient;
+                        this.pData = (EntityData) fromClient;
                         this.updates.add(this.pData);
                     }
                 }catch(EOFException ignored) {}
@@ -51,19 +49,19 @@ class ClientHandler extends NetworkCommunicator implements Runnable {
         }
     }
 
-    void uploadToClient(PlayerData playerData) throws IOException {
+    void uploadToClient(EntityData entityData) throws IOException {
         this.out.reset();
-        this.out.writeObject(playerData);
+        this.out.writeObject(entityData);
         this.out.flush();
     }
 
-    public CopyOnWriteArrayList<PlayerData> getUpdates() {
+    public CopyOnWriteArrayList<EntityData> getUpdates() {
         return this.updates;
     }
     public void wipeUpdates() {
         this.updates.clear();
     }
-    PlayerData getPlayerData() {
+    EntityData getPlayerData() {
         return this.pData;
     }
 

@@ -2,10 +2,10 @@ package client.model;
 
 import java.io.Serializable;
 
-public class PlayerData implements Serializable {
+public class EntityData implements Serializable {
     private Vector2D pos;
     private int id;
-    public PlayerData(Vector2D position, int playerId) {
+    public EntityData(Vector2D position, int playerId) {
         this.pos = position;
         this.id = playerId;
     }

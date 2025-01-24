@@ -3,15 +3,15 @@ package client.model;
 import java.awt.*;
 
 public class Player implements GameObject {
-    private PlayerData pData;
+    private EntityData pData;
     private Vector2D vel, dim;
     private Color col;
     private float speed;
     private boolean grounded = false;
 
 
-    public Player(PlayerData playerData, Color color, Vector2D dimensions) {
-        this.pData = playerData;
+    public Player(EntityData entityData, Color color, Vector2D dimensions) {
+        this.pData = entityData;
         this.vel = new Vector2D(0, 0);
         this.dim = dimensions;
         this.speed = 0.5f;
@@ -33,8 +33,8 @@ public class Player implements GameObject {
     public Vector2D getPos() {
         return this.pData.getPos();
     }
-    public PlayerData getPlayerData() {return this.pData; }
-    public void setPlayerData(PlayerData newData) {this.pData = newData; }
+    public EntityData getPlayerData() {return this.pData; }
+    public void setPlayerData(EntityData newData) {this.pData = newData; }
     public Color getColor() {
         return this.col;
     }

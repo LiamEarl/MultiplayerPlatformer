@@ -30,10 +30,11 @@ public class GameClient {
                 System.out.println("Failed To Connect To The Server");
             }
 
-            gameObjects[9] = new Obstacle(-100, 800, 600, 200, new Color(14, 3, 46));
-            gameObjects[10] = new Obstacle(0, 0, 50, 1000, new Color(14, 3, 46));
-            gameObjects[11] = new Obstacle(650, 750, 100, 100, new Color(14, 3, 46));
-            gameObjects[12] = new Obstacle(875, 700, 100, 100, new Color(14, 3, 46));
+            Color wallColor = new Color(14, 3, 46);
+            gameObjects[9] = new Obstacle(-100, 800, 600, 1000, wallColor);
+            gameObjects[10] = new Obstacle(-1000, -500, 1050, 4000, wallColor);
+            gameObjects[11] = new Obstacle(900, 750, 100, 100, wallColor);
+            gameObjects[12] = new Obstacle(1350, 700, 100, 100, wallColor);
 
             Game game = null;
 
