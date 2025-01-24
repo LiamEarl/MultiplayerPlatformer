@@ -3,61 +3,54 @@ package client.model;
 import java.awt.*;
 
 public class Player implements GameObject {
-    private Vector2D pos;
-    private Vector2D vel;
-    private Vector2D dim;
+    private PlayerData pData;
+    private Vector2D vel, dim;
     private Color col;
     private float speed;
     private boolean grounded = false;
 
-    public Player(float x, float y, Color color) {
-        this.pos = new Vector2D(x, y);
+
+    public Player(PlayerData playerData, Color color, Vector2D dimensions) {
+        this.pData = playerData;
         this.vel = new Vector2D(0, 0);
-        this.dim = new Vector2D(100, 100);
+        this.dim = dimensions;
         this.speed = 0.5f;
         this.col = color;
     }
 
     public void update() {
-        this.pos.setXY(this.pos.getX() + this.vel.getX(), this.pos.getY() + this.vel.getY());
+        this.pData.getPos().setXY(this.pData.getPos().getX() + this.vel.getX(), this.pData.getPos().getY() + this.vel.getY());
         this.vel.scale(0.98f);
         this.vel.addXY(0, 0.7f);
         this.grounded = false;
-    }
-    public Color getColor() {
-        return this.col;
     }
 
     @Override
     public Vector2D getDim() {
         return dim;
     }
-
+    @Override
+    public Vector2D getPos() {
+        return this.pData.getPos();
+    }
+    public PlayerData getPlayerData() {return this.pData; }
+    public void setPlayerData(PlayerData newData) {this.pData = newData; }
+    public Color getColor() {
+        return this.col;
+    }
     public Vector2D getVel() {
         return vel;
     }
-
     public void setVel(Vector2D vel) {
         this.vel = vel;
     }
-
-    @Override
-    public Vector2D getPos() {
-        return pos;
-    }
-
-    public void setPos(Vector2D pos) {
-        this.pos = pos;
-    }
-
+    public void setPos(Vector2D pos) {this.pData.getPos().set(pos); }
     public float getSpeed() {
         return speed;
     }
-
     public void setSpeed(float speed) {
         this.speed = speed;
     }
-
     public void setGrounded(boolean state) {
         this.grounded = state;
     }

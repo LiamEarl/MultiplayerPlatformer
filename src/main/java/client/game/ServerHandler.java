@@ -1,84 +1,76 @@
 package client.game;
 import client.model.GameObject;
 import client.model.Player;
+import client.model.PlayerData;
+import client.model.Vector2D;
 import server.NetworkCommunicator;
 
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 
+import static java.lang.System.currentTimeMillis;
+
 class ServerHandler extends NetworkCommunicator implements Runnable {
     private Socket serverSocket;
-    private InputStream in;
-    private OutputStream out;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
     private GameObject[] gameObjects;
-    private int playerId;
-
+    private PlayerData mainPlayerData;
 
     ServerHandler(Socket serverSocket, GameObject[] gameObjects) throws IOException {
         this.serverSocket = serverSocket;
-        this.in = serverSocket.getInputStream();
-        this.out = serverSocket.getOutputStream();
+        this.out = new ObjectOutputStream(serverSocket.getOutputStream());
+        this.in = new ObjectInputStream(serverSocket.getInputStream());
         this.gameObjects = gameObjects;
-        this.playerId = -1;
     }
 
     @Override
     public void run() {
         try {
             Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
-
-            byte[] buffer = new byte[2000];
-            String fromServer;
+            Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(55.6f, 45)};
 
             while (this.serverSocket.isConnected()) {
 
-                if(this.playerId != -1) {
-                    GameObject p = this.gameObjects[this.playerId];
-                    uploadToServer("PD." + (int)p.getPos().getX() + "." + (int)p.getPos().getY() + "." + (int)p.getDim().getX() + "." + (int)p.getDim().getY() + "|");
-                }
+                try {
+                    Object fromServerObject = this.in.readObject();
+                    if (fromServerObject instanceof PlayerData) {
+                        PlayerData fromServer = (PlayerData) fromServerObject;
 
-
-                fromServer = super.receiveInput(buffer, this.in);
-
-
-                if (!fromServer.isEmpty()) {
-                    //System.out.println(fromServer);
-                    String[] command = fromServer.split("[.]");
-
-                    if (command[0].equals("PD")) {
-
-                        int id = Integer.parseInt(command[1]);
-
-                        if (this.gameObjects[id] == null)
-                            this.gameObjects[id] = new Player(100, 700, playerColorCodes[id]);
-
-                        this.gameObjects[id].getPos().setXY(Float.parseFloat(command[2]), Float.parseFloat(command[3]));
-                        this.gameObjects[id].getDim().setXY(Float.parseFloat(command[4]), Float.parseFloat(command[5]));
-                    } else if (command[0].equals("CID")) {
-                        this.playerId = Integer.parseInt(command[1]);
-                        this.gameObjects[this.playerId] = new Player(100, 700, playerColorCodes[this.playerId]);
-                        System.out.println("INITIALIZED PLAYER");
+                        if(this.mainPlayerData == null) {
+                            this.mainPlayerData = fromServer;
+                            this.gameObjects[this.mainPlayerData.getId()] = new Player(this.mainPlayerData, playerColorCodes[this.mainPlayerData.getId()], dimensions[this.mainPlayerData.getId()]);
+                            System.out.println("INITIALIZED PLAYER " + fromServer.getId());
+                        }else {
+                            if(gameObjects[fromServer.getId()] == null) {
+                                this.gameObjects[fromServer.getId()] = new Player(fromServer, playerColorCodes[fromServer.getId()], dimensions[fromServer.getId()]);
+                                System.out.println("INITIALIZED PLAYER " + fromServer.getId());
+                            }else {
+                                ((Player) this.gameObjects[fromServer.getId()]).setPlayerData(fromServer);
+                                System.out.println("Receiving Position X:" + fromServer.getPos().getX() + " Y:" + fromServer.getPos().getY());
+                            }
+                        }
                     }
-
-
-                    buffer = new byte[2000];
+                }catch(EOFException ignored) {} catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
-
-                Thread.sleep(16);
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    void uploadToServer(String toUpload) throws IOException {
-        super.uploadToServer(toUpload, this.out);
+    void writeToServer() throws IOException {
+        this.out.reset();
+        PlayerData stuff = new PlayerData(new Vector2D(this.mainPlayerData.getPos().getX(), this.mainPlayerData.getPos().getY()), this.mainPlayerData.getId());
+        this.out.writeObject(stuff);
+        this.out.flush();
+        //System.out.println("Writing To Server X:" + this.mainPlayerData.getPos().getX() + " Y:" + this.mainPlayerData.getPos().getY());
     }
 
     int getPlayerId() {
-        return this.playerId;
+        if(this.mainPlayerData == null) return -1;
+        return this.mainPlayerData.getId();
     }
 }

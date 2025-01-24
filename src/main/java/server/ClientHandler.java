@@ -1,72 +1,70 @@
 package server;
 
+import client.model.Player;
+import client.model.PlayerData;
 import client.model.Vector2D;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 class ClientHandler extends NetworkCommunicator implements Runnable {
     private Socket clientSocket;
-    private int clientId;
-    private InputStream in;
-    private OutputStream out;
-    private Vector2D playerLocation;
-    private Vector2D playerDimensions;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private PlayerData pData;
+    private CopyOnWriteArrayList<PlayerData> updates;
 
     public ClientHandler(Socket clientSocket, int clientId) throws IOException {
+        this.updates = new CopyOnWriteArrayList<>();
         this.clientSocket = clientSocket;
-        this.in = clientSocket.getInputStream();
-        this.out = clientSocket.getOutputStream();
-        this.clientId = clientId;
-        uploadToClient("CID." + clientId + "|");
-        this.playerLocation = new Vector2D(-1000, -1000);
-        this.playerDimensions = new Vector2D(0, 0);
+        this.out = new ObjectOutputStream(clientSocket.getOutputStream());
+        this.in = new ObjectInputStream(clientSocket.getInputStream());
+        this.pData = new PlayerData(new Vector2D(100, 650), clientId);
+        uploadToClient(this.pData);
     }
 
     @Override
     public void run() {
         try {
-            byte[] buffer = new byte[2000];
-            String fromClient;
 
             while (this.clientSocket.isConnected()) {
-                //uploadToClient("You are a basic client. I have absolute authority over you.|");
-
-                fromClient = super.receiveInput(buffer, this.in); // Get Messages From
-
-                if(!fromClient.isEmpty()) {
-                    //System.out.println(fromClient);
-                    String[] command = fromClient.split("[.]");
-
-                    if(command[0].equals("PD")) {
-                        this.playerLocation.setXY(Float.parseFloat(command[1]), Float.parseFloat(command[2]));
-                        this.playerDimensions.setXY(Float.parseFloat(command[3]), Float.parseFloat(command[4]));
+                //Thread.sleep(16);
+                try {
+                    Object fromClient = this.in.readObject();
+                    if (fromClient instanceof PlayerData) {
+                        //System.out.println("Receiving Client Info" + ((PlayerData) fromClient).getPos().getX() + " " + ((PlayerData) fromClient).getPos().getY());
+                        this.pData = (PlayerData) fromClient;
+                        this.updates.add(this.pData);
                     }
+                }catch(EOFException ignored) {}
 
-                    buffer = new byte[2000];
-                }
-                Thread.sleep(16);
+
             }
 
         } catch(IOException e) {
             e.printStackTrace();
         }
-        catch (InterruptedException e) {
+        catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    int getClientId() {
-        return this.clientId;
+    void uploadToClient(PlayerData playerData) throws IOException {
+        this.out.reset();
+        this.out.writeObject(playerData);
+        this.out.flush();
     }
 
-    void uploadToClient(String toUpload) throws IOException {
-        super.uploadToServer(toUpload, this.out);
+    public CopyOnWriteArrayList<PlayerData> getUpdates() {
+        return this.updates;
     }
-    Vector2D getPlayerLocation() {
-        return this.playerLocation;
+    public void wipeUpdates() {
+        this.updates.clear();
     }
-    Vector2D getPlayerDimensions() {
-        return this.playerDimensions;
+    PlayerData getPlayerData() {
+        return this.pData;
     }
+
 }
