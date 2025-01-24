@@ -19,8 +19,8 @@ public class Player implements GameObject {
     }
 
     public void update() {
-        this.pData.getPos().setXY(this.pData.getPos().getX() + this.vel.getX(), this.pData.getPos().getY() + this.vel.getY());
-        this.vel.scale(0.98f);
+        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX()), this.pData.getPos().getY() + (this.vel.getY()));
+        this.vel.scale(1f - (0.02f));
         this.vel.addXY(0, 0.7f);
         this.grounded = false;
     }

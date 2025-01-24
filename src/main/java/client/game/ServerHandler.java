@@ -46,7 +46,7 @@ class ServerHandler extends NetworkCommunicator implements Runnable {
                                 System.out.println("INITIALIZED PLAYER " + fromServer.getId());
                             }else {
                                 ((Player) this.gameObjects[fromServer.getId()]).setPlayerData(fromServer);
-                                System.out.println("Receiving Position X:" + fromServer.getPos().getX() + " Y:" + fromServer.getPos().getY());
+                                //System.out.println("Receiving Position X:" + fromServer.getPos().getX() + " Y:" + fromServer.getPos().getY());
                             }
                         }
                     }

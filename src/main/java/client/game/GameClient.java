@@ -8,6 +8,8 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 
+import static java.lang.System.currentTimeMillis;
+
 public class GameClient {
 
     private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
@@ -22,31 +24,46 @@ public class GameClient {
     public static void main(String[] args) {
         try {
             GameObject[] gameObjects = new GameObject[100];
-
             ServerHandler serverConnection = null;
-            try {
-                serverConnection = handleServerConnection(gameObjects);
-            } catch (ConnectException e) {
-                System.out.println("Failed To Connect To The Server");
-            }
-
-            Color wallColor = new Color(14, 3, 46);
-            gameObjects[9] = new Obstacle(-100, 800, 600, 1000, wallColor);
-            gameObjects[10] = new Obstacle(-1000, -500, 1050, 4000, wallColor);
-            gameObjects[11] = new Obstacle(900, 750, 100, 100, wallColor);
-            gameObjects[12] = new Obstacle(1350, 700, 100, 100, wallColor);
-
             Game game = null;
+
+            final float dt = 0.5f;
+            int currentTick = -1;
+
+            Color drabWallColor = new Color(30, 20, 90);
+            Color brightWallColor = new Color(255, 213, 0);
+            gameObjects[9]  = new Obstacle(-100, 800, 600, 1000, drabWallColor);
+            gameObjects[10] = new Obstacle(-1000, -500, 1050, 4000, drabWallColor);
+            gameObjects[11] = new Obstacle(700, 700, 310, 4000, drabWallColor);
+            gameObjects[12] = new Obstacle(1700, 700, 575, 4000, drabWallColor);
+            gameObjects[13] = new Obstacle(1000, 400, 10, 4000, drabWallColor);
+            gameObjects[14] = new Obstacle(990, 550, 10, 10, drabWallColor);
+            gameObjects[15] = new Obstacle(2700, 600, 5, 5, brightWallColor);
+            gameObjects[16] = new Obstacle(3250, 525, 5, 5, brightWallColor);
+            gameObjects[17] = new Obstacle(3700, 525, 500, 3000, drabWallColor);
+            gameObjects[18] = new Obstacle(4190, -700, 10, 3000, drabWallColor);
+            gameObjects[19] = new Obstacle(3700, -700, 10, 1000, drabWallColor);
+            gameObjects[20] = new Obstacle(3925, 425, 50, 100, drabWallColor);
+            gameObjects[21] = new Obstacle(3710, 290, 10, 10, drabWallColor);
 
             while(true) {
                 Thread.sleep(16);
 
-                //System.out.println(1);
+                currentTick ++;
+
+                if(serverConnection == null) {
+                    try {
+                        serverConnection = handleServerConnection(gameObjects);
+                    } catch (ConnectException e) {
+                        System.out.println("Failed To Connect To The Server. Listening For A Connection.");
+                    }
+                }
+
                 if(game == null) {
                     if(serverConnection == null) continue;
 
                     if (serverConnection.getPlayerId() != -1) {
-                        System.out.println("ATTEMPTING GAME CREATION");
+                        //System.out.println("ATTEMPTING GAME CREATION");
                         game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
                     }
                     continue;
@@ -54,14 +71,17 @@ public class GameClient {
 
                 game.renderScene();
                 game.handleKeyInputs();
+
                 ((Player) gameObjects[serverConnection.getPlayerId()]).update();
                 game.checkPlayerCollisions();
 
                 if(serverConnection.getPlayerId() != -1) {
-                    if (((Player) gameObjects[serverConnection.getPlayerId()]).getVel().length() > 0.2f) {
+                    if (((Player) gameObjects[serverConnection.getPlayerId()]).getVel().length() > 0.5f) {
                         serverConnection.writeToServer();
                     }
                 }
+
+
             }
         }catch (Exception e) {
             e.printStackTrace();
