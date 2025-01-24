@@ -1,6 +1,6 @@
 package server;
 
-import client.model.PlayerData;
+import client.model.EntityData;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,7 +26,7 @@ public class GameServer {
                 //System.out.println("Updating");
                 for(ClientHandler client : clientHandlers) {
 
-                    for(PlayerData update : client.getUpdates()) {
+                    for(EntityData update : client.getUpdates()) {
 
                         for (ClientHandler toSend : clientHandlers) {
                             if (client == toSend) continue;

@@ -14,8 +14,8 @@ public class Game extends JPanel implements KeyListener {
     Player player;
     boolean[] keyPressed = new boolean[256];
     GameObject[] gameObjects;
-    private final int WINDOW_WIDTH = 1200;
-    private final int WINDOW_HEIGHT = 1000;
+    private final int WINDOW_WIDTH = 1300;
+    private final int WINDOW_HEIGHT = 800;
 
 
     Game(Player player, GameObject[] gameObjects) {
@@ -43,15 +43,12 @@ public class Game extends JPanel implements KeyListener {
             this.player.getVel().addXY(player.getSpeed(), 0);
         }
         if(this.keyPressed[KeyEvent.VK_UP] && player.getGrounded()) {
-            this.player.getVel().setY(-50);
-        }
-        if(this.keyPressed[KeyEvent.VK_DOWN]) {
-            this.player.getVel().addXY(0, player.getSpeed());
+            this.player.getVel().setY(-17);
         }
     }
 
     void checkPlayerCollisions() {
-        if(player.getPos().getY() > WINDOW_HEIGHT) {
+        if(player.getPos().getY() > 3000) {
             player.getPos().setXY(100, 700);
             player.getVel().setXY(0, 0);
         }
@@ -110,6 +107,8 @@ public class Game extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        Vector2D cameraOffset = new Vector2D((WINDOW_WIDTH / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2)), (WINDOW_HEIGHT / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2)));
         // Draw the background
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -118,7 +117,7 @@ public class Game extends JPanel implements KeyListener {
             if(r == null) continue;
             // Draw the rectangle
             g.setColor(r.getColor());
-            g.fillRect((int) r.getPos().getX(), (int) r.getPos().getY(), (int) r.getDim().getX(), (int) r.getDim().getY());
+            g.fillRect((int) (r.getPos().getX() + cameraOffset.getX()), (int) (r.getPos().getY() + cameraOffset.getY()), (int) r.getDim().getX(), (int) r.getDim().getY());
         }
     }
 

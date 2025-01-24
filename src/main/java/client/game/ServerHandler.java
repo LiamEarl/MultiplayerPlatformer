@@ -1,7 +1,7 @@
 package client.game;
 import client.model.GameObject;
 import client.model.Player;
-import client.model.PlayerData;
+import client.model.EntityData;
 import client.model.Vector2D;
 import server.NetworkCommunicator;
 
@@ -9,14 +9,12 @@ import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 
-import static java.lang.System.currentTimeMillis;
-
 class ServerHandler extends NetworkCommunicator implements Runnable {
     private Socket serverSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private GameObject[] gameObjects;
-    private PlayerData mainPlayerData;
+    private EntityData mainPlayerData;
 
     ServerHandler(Socket serverSocket, GameObject[] gameObjects) throws IOException {
         this.serverSocket = serverSocket;
@@ -35,8 +33,8 @@ class ServerHandler extends NetworkCommunicator implements Runnable {
 
                 try {
                     Object fromServerObject = this.in.readObject();
-                    if (fromServerObject instanceof PlayerData) {
-                        PlayerData fromServer = (PlayerData) fromServerObject;
+                    if (fromServerObject instanceof EntityData) {
+                        EntityData fromServer = (EntityData) fromServerObject;
 
                         if(this.mainPlayerData == null) {
                             this.mainPlayerData = fromServer;
@@ -63,7 +61,7 @@ class ServerHandler extends NetworkCommunicator implements Runnable {
 
     void writeToServer() throws IOException {
         this.out.reset();
-        PlayerData stuff = new PlayerData(new Vector2D(this.mainPlayerData.getPos().getX(), this.mainPlayerData.getPos().getY()), this.mainPlayerData.getId());
+        EntityData stuff = new EntityData(new Vector2D(this.mainPlayerData.getPos().getX(), this.mainPlayerData.getPos().getY()), this.mainPlayerData.getId());
         this.out.writeObject(stuff);
         this.out.flush();
         //System.out.println("Writing To Server X:" + this.mainPlayerData.getPos().getX() + " Y:" + this.mainPlayerData.getPos().getY());
