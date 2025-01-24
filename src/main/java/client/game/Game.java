@@ -16,7 +16,7 @@ public class Game extends JPanel implements KeyListener {
     GameObject[] gameObjects;
     private final int WINDOW_WIDTH = 1300;
     private final int WINDOW_HEIGHT = 800;
-
+    private boolean godMode = false;
 
     Game(Player player, GameObject[] gameObjects) {
         this.player = player;
@@ -25,7 +25,7 @@ public class Game extends JPanel implements KeyListener {
         JFrame frame = new JFrame("Liam's Platformer Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        frame.setResizable(false);
+        frame.setResizable(true);
         frame.addKeyListener(this);
         frame.add(this);
         frame.setVisible(true);
@@ -36,18 +36,42 @@ public class Game extends JPanel implements KeyListener {
     }
 
     void handleKeyInputs() {
-        if(this.keyPressed[KeyEvent.VK_LEFT]) {
-            this.player.getVel().addXY(-player.getSpeed(), 0);
+        if (this.keyPressed[KeyEvent.VK_BACK_SLASH] && this.keyPressed[KeyEvent.VK_SHIFT]) {
+            godMode = true;
+        }else if (this.keyPressed[KeyEvent.VK_SLASH]) {
+            godMode = false;
         }
-        if(this.keyPressed[KeyEvent.VK_RIGHT]) {
-            this.player.getVel().addXY(player.getSpeed(), 0);
-        }
-        if(this.keyPressed[KeyEvent.VK_UP] && player.getGrounded()) {
-            this.player.getVel().setY(-17);
+
+        if(!godMode) {
+            if (this.keyPressed[KeyEvent.VK_LEFT]) {
+                this.player.getVel().addXY(-player.getSpeed(), 0);
+            }
+            if (this.keyPressed[KeyEvent.VK_RIGHT]) {
+                this.player.getVel().addXY(player.getSpeed(), 0);
+            }
+            if (this.keyPressed[KeyEvent.VK_UP] && player.getGrounded()) {
+                this.player.getVel().setY(-17);
+            }
+        } else {
+            this.player.setVel(new Vector2D(0, 0));
+            if (this.keyPressed[KeyEvent.VK_LEFT]) {
+                this.player.getPos().addXY(-25, 0);
+            }
+            if (this.keyPressed[KeyEvent.VK_RIGHT]) {
+                this.player.getPos().addXY(25, 0);
+            }
+            if (this.keyPressed[KeyEvent.VK_UP]) {
+                this.player.getPos().addXY(0, -25);
+            }
+            if (this.keyPressed[KeyEvent.VK_DOWN]) {
+                this.player.getPos().addXY(0, 25);
+            }
         }
     }
 
     void checkPlayerCollisions() {
+        if(godMode) return;
+
         if(player.getPos().getY() > 3000) {
             player.getPos().setXY(100, 700);
             player.getVel().setXY(0, 0);
@@ -55,51 +79,59 @@ public class Game extends JPanel implements KeyListener {
 
         for(GameObject obj : this.gameObjects) {
             if(obj != null && obj instanceof Obstacle) {
-                handleEntityCollision(this.player, (Obstacle) obj);
+                handlePlayerCollision(this.player, (Obstacle) obj);
             }
         }
     }
 
-    private void handleEntityCollision(Player entity, Obstacle toCollide) {
-        Vector2D ePos = entity.getPos();
-        Vector2D eDim = entity.getDim();
+    private void handlePlayerCollision(Player player, Obstacle toCollide) {
+        Vector2D pPos = player.getPos();
+        Vector2D pDim = player.getDim();
+        Vector2D pVel = player.getVel();
         Vector2D oPos = toCollide.getPos();
         Vector2D oDim = toCollide.getDim();
 
-        boolean isColliding = ePos.getX() < oPos.getX() + oDim.getX() &&
-                ePos.getX() + eDim.getX() > oPos.getX() &&
-                ePos.getY() < oPos.getY() + oDim.getY() &&
-                ePos.getY() + eDim.getY() > oPos.getY();
+        boolean isBoundingBoxColliding = pPos.getX() + pVel.getX() < oPos.getX() + oDim.getX() &&
+                pPos.getX() + pDim.getX() + pVel.getX() > oPos.getX() &&
+                pPos.getY() + pVel.getY() < oPos.getY() + oDim.getY() &&
+                pPos.getY() + pDim.getY() + pVel.getY() > oPos.getY();
 
+        if(!isBoundingBoxColliding) return;
+
+        /*boolean isColliding = pPos.getX() < oPos.getX() + oDim.getX() &&
+                pPos.getX() + pDim.getX() > oPos.getX() &&
+                pPos.getY() < oPos.getY() + oDim.getY() &&
+                pPos.getY() + pDim.getY() > oPos.getY();
         if(!isColliding) return;
+        */
 
-        float overlapX = Math.min(ePos.getX() + eDim.getX(), oPos.getX() + oDim.getX()) - Math.max(ePos.getX(), oPos.getX());
-        float overlapY = Math.min(ePos.getY() + eDim.getY(), oPos.getY() + oDim.getY()) - Math.max(ePos.getY(), oPos.getY());
+        float overlapX = Math.min(pPos.getX() + pDim.getX(), oPos.getX() + oDim.getX()) - Math.max(pPos.getX(), oPos.getX());
+        float overlapY = Math.min(pPos.getY() + pDim.getY(), oPos.getY() + oDim.getY()) - Math.max(pPos.getY(), oPos.getY());
 
         if (overlapX < overlapY) {
-            if (ePos.getX() < oPos.getX()) {
-                ePos.addXY(-overlapX, 0);
-                if (ePos.getX() + eDim.getX() <= oPos.getX()) {
-                    entity.getVel().setXY(0, entity.getVel().getY());
+            if (pPos.getX() < oPos.getX()) {
+                pPos.addXY(-overlapX, 0);
+                if (pPos.getX() + pDim.getX() <= oPos.getX()) {
+                    player.getVel().setXY(0, player.getVel().getY());
                 }
 
             } else {
-                ePos.addXY(overlapX, 0);
-                if (ePos.getX() >= oPos.getX() + oDim.getX()) {
-                    entity.getVel().setXY(0, entity.getVel().getY());
+                pPos.addXY(overlapX, 0);
+                if (pPos.getX() >= oPos.getX() + oDim.getX()) {
+                    player.getVel().setXY(0, player.getVel().getY());
                 }
             }
 
         } else {
-            if (ePos.getY() < oPos.getY()) {
-                ePos.addXY(0, -overlapY);
-                entity.setGrounded(true);
-                entity.getVel().setXY(entity.getVel().getX() * 0.85f, 0);
+            if (pPos.getY() < oPos.getY()) {
+                pPos.addXY(0, -overlapY);
+                player.setGrounded(true);
+                player.getVel().setXY(player.getVel().getX() * 0.97f, 0);
             } else {
-                ePos.addXY(0, overlapY);
-                if(ePos.getY() > oPos.getY()+oDim.getY()) {
-                    entity.getVel().setXY(entity.getVel().getX(), 0);
-                }
+                pPos.addXY(0, overlapY);
+                //if(pPos.getY() > oPos.getY()+oDim.getY()) {
+                    player.getVel().setXY(player.getVel().getX(), 0f);
+                //}
             }
         }
     }
@@ -108,16 +140,25 @@ public class Game extends JPanel implements KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        Vector2D cameraOffset = new Vector2D((WINDOW_WIDTH / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2)), (WINDOW_HEIGHT / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2)));
+        Vector2D cameraOffset = new Vector2D((getWidth() / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2)), (getHeight() / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2)));
         // Draw the background
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         for(GameObject r : this.gameObjects) {
+
             if(r == null) continue;
+
+            int objX = (int) (r.getPos().getX() + cameraOffset.getX());
+            int objY = (int) (r.getPos().getY() + cameraOffset.getY());
+            int objW = (int) r.getDim().getX();
+            int objH = (int) r.getDim().getY();
+
+            if(objX > getWidth() || objX + objW < 0 || objY > getHeight() || objY + objH < 0) continue;
+
             // Draw the rectangle
             g.setColor(r.getColor());
-            g.fillRect((int) (r.getPos().getX() + cameraOffset.getX()), (int) (r.getPos().getY() + cameraOffset.getY()), (int) r.getDim().getX(), (int) r.getDim().getY());
+            g.fillRect(objX, objY, objW, objH);
         }
     }
 
