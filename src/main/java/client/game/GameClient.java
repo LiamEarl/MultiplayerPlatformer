@@ -11,7 +11,7 @@ import java.net.Socket;
 public class GameClient {
 
     private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
-        Socket serverSocket = new Socket("localhost", 8888); // Server IP and port
+        Socket serverSocket = new Socket("192.168.12.113", 8888); // Server IP and port
         System.out.println("Server Connected At IP: " + serverSocket.getLocalSocketAddress());
         ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
         Thread serverThread = new Thread(serverHandler);
@@ -38,17 +38,29 @@ public class GameClient {
             Game game = null;
 
             while(true) {
-                if(game == null && serverConnection.getPlayerId() != -1 && serverConnection != null)
-                    game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
+                Thread.sleep(16);
 
-                if(game == null) continue;
+                //System.out.println(1);
+                if(game == null) {
+                    if(serverConnection == null) continue;
+
+                    if (serverConnection.getPlayerId() != -1) {
+                        System.out.println("ATTEMPTING GAME CREATION");
+                        game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
+                    }
+                    continue;
+                }
 
                 game.renderScene();
                 game.handleKeyInputs();
                 ((Player) gameObjects[serverConnection.getPlayerId()]).update();
                 game.checkPlayerCollisions();
 
-                Thread.sleep(16);
+                if(serverConnection.getPlayerId() != -1) {
+                    if (((Player) gameObjects[serverConnection.getPlayerId()]).getVel().length() > 0.2f) {
+                        serverConnection.writeToServer();
+                    }
+                }
             }
         }catch (Exception e) {
             e.printStackTrace();

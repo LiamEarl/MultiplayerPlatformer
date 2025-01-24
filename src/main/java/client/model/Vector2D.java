@@ -1,6 +1,8 @@
 package client.model;
 
-public class Vector2D {
+import java.io.Serializable;
+
+public class Vector2D implements Serializable {
     private float x, y;
 
     public Vector2D(float x, float y) {
@@ -42,6 +44,11 @@ public class Vector2D {
     public void addXY(float addX, float addY) {
         this.x += addX;
         this.y += addY;
+    }
+
+    public void set(Vector2D toSet) {
+        this.x = toSet.getX();
+        this.y = toSet.getY();
     }
 
     public float getX() {

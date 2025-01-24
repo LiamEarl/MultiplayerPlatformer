@@ -1,6 +1,9 @@
 package server;
 
+import client.model.PlayerData;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -10,7 +13,9 @@ public class GameServer {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
 
         try {
-            ServerSocket serverSocket = new ServerSocket(8888);
+            ServerSocket serverSocket = new ServerSocket();
+            serverSocket.bind(new InetSocketAddress("192.168.12.113", 8888));
+
             System.out.println("Server started on port: " + serverSocket.getLocalPort());
 
             AcceptIncomingClients incoming = new AcceptIncomingClients(serverSocket, clientHandlers);
@@ -18,19 +23,19 @@ public class GameServer {
             incomingClients.start();
 
             while (true) {
+                //System.out.println("Updating");
                 for(ClientHandler client : clientHandlers) {
-                    for(ClientHandler toSend: clientHandlers) {
-                        if(client == toSend) continue;
-                        toSend.uploadToClient(
-                                "PD."
-                                        + client.getClientId() + "."
-                                        + (int)client.getPlayerLocation().getX() + "."
-                                        + (int)client.getPlayerLocation().getY() + "."
-                                        + (int)client.getPlayerDimensions().getX() + "."
-                                        + (int)client.getPlayerDimensions().getY() + "|");
+
+                    for(PlayerData update : client.getUpdates()) {
+
+                        for (ClientHandler toSend : clientHandlers) {
+                            if (client == toSend) continue;
+                            toSend.uploadToClient(update);
+                        }
                     }
+                    client.wipeUpdates();
                 }
-                Thread.sleep(16);
+                Thread.sleep(5);
             }
         }catch (IOException e) {
             e.printStackTrace();
