@@ -98,13 +98,6 @@ public class Game extends JPanel implements KeyListener {
 
         if(!isBoundingBoxColliding) return;
 
-        /*boolean isColliding = pPos.getX() < oPos.getX() + oDim.getX() &&
-                pPos.getX() + pDim.getX() > oPos.getX() &&
-                pPos.getY() < oPos.getY() + oDim.getY() &&
-                pPos.getY() + pDim.getY() > oPos.getY();
-        if(!isColliding) return;
-        */
-
         float overlapX = Math.min(pPos.getX() + pDim.getX(), oPos.getX() + oDim.getX()) - Math.max(pPos.getX(), oPos.getX());
         float overlapY = Math.min(pPos.getY() + pDim.getY(), oPos.getY() + oDim.getY()) - Math.max(pPos.getY(), oPos.getY());
 

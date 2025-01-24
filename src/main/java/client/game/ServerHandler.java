@@ -27,7 +27,7 @@ class ServerHandler extends NetworkCommunicator implements Runnable {
     public void run() {
         try {
             Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
-            Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(55.6f, 45)};
+            Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(31.25f, 80)};
 
             while (this.serverSocket.isConnected()) {
 

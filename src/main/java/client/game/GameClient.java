@@ -76,7 +76,7 @@ public class GameClient {
                 game.checkPlayerCollisions();
 
                 if(serverConnection.getPlayerId() != -1) {
-                    if (((Player) gameObjects[serverConnection.getPlayerId()]).getVel().length() > 0.5f) {
+                    if (((Player) gameObjects[serverConnection.getPlayerId()]).getVel().length() > 0.01f || currentTick % 20 == 0) {
                         serverConnection.writeToServer();
                     }
                 }
