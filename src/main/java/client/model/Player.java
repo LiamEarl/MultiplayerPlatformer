@@ -4,11 +4,10 @@ import java.awt.*;
 
 public class Player implements GameObject {
     private EntityData pData;
-    private Vector2D vel, dim;
+    private Vector2D vel, dim, spawnPoint;
     private Color col;
     private float speed;
     private boolean grounded = false;
-
 
     public Player(EntityData entityData, Color color, Vector2D dimensions) {
         this.pData = entityData;
@@ -16,15 +15,20 @@ public class Player implements GameObject {
         this.dim = dimensions;
         this.speed = 0.5f;
         this.col = color;
+        this.spawnPoint = new Vector2D(entityData.getPos().getX(), entityData.getPos().getY());
     }
 
+    @Override
     public void update() {
         this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX()), this.pData.getPos().getY() + (this.vel.getY()));
         this.vel.scale(1f - (0.02f));
         this.vel.addXY(0, 0.7f);
         this.grounded = false;
     }
-
+    @Override
+    public Vector2D getVelocity() {
+        return vel;
+    }
     @Override
     public Vector2D getDim() {
         return dim;
@@ -37,9 +41,6 @@ public class Player implements GameObject {
     public void setPlayerData(EntityData newData) {this.pData = newData; }
     public Color getColor() {
         return this.col;
-    }
-    public Vector2D getVel() {
-        return vel;
     }
     public void setVel(Vector2D vel) {
         this.vel = vel;
@@ -57,4 +58,7 @@ public class Player implements GameObject {
     public boolean getGrounded() {
         return this.grounded;
     }
+    public void respawn() {this.setPos(this.spawnPoint); this.getVelocity().setXY(0, 0);}
+    public Vector2D getSpawnPoint() {return this.spawnPoint; }
+    public void setSpawnPoint(Vector2D spawnPoint) {this.spawnPoint = spawnPoint;}
 }

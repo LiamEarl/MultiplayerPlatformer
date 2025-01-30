@@ -14,7 +14,7 @@ public class GameServer {
 
         try {
             ServerSocket serverSocket = new ServerSocket();
-            serverSocket.bind(new InetSocketAddress("192.168.12.113", 8888));
+            serverSocket.bind(new InetSocketAddress("localhost", 8888));//192.168.12.113
 
             System.out.println("Server started on port: " + serverSocket.getLocalPort());
 
