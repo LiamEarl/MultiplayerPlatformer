@@ -41,7 +41,6 @@ public class GameClient {
 
                 if(game == null) {
                     if(serverConnection == null) continue;
-
                     if (serverConnection.getPlayerId() != -1) {
                         System.out.println("ATTEMPTING GAME CREATION");
                         game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
@@ -49,10 +48,10 @@ public class GameClient {
                     continue;
                 }
 
-                game.renderScene();
                 game.handleKeyInputs();
                 game.updateGameObjects();
                 game.checkPlayerCollisions();
+                game.renderScene();
 
                 if(serverConnection.getPlayerId() != -1) {
                     if (gameObjects[serverConnection.getPlayerId()].getVelocity().length() > 0.5f || currentTick % 10 == 0) {

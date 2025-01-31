@@ -18,7 +18,6 @@ public class Box implements GameObject {
         this.lastPos = new Vector2D(x, y);
         this.equations = equations.split("~");
     }
-
     public Vector2D getVelocity() {
         if(this.equations[0].equals("#") && this.equations[1].equals("#")) return new Vector2D(0, 0);
         Vector2D velocity = new Vector2D(this.pos.getX(), this.pos.getY());

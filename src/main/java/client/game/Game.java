@@ -52,7 +52,7 @@ public class Game extends JPanel implements KeyListener {
                 this.player.getVelocity().addXY(player.getSpeed(), 0);
             }
             if (this.keyPressed[KeyEvent.VK_UP] && player.getGrounded()) {
-                this.player.getVelocity().setY(-17);
+                this.player.getVelocity().addXY(0,-17);
             }
         } else {
             this.player.setVel(new Vector2D(0, 0));
@@ -83,18 +83,18 @@ public class Game extends JPanel implements KeyListener {
         gameObjects[13] = new Box(1000, 400, 10, 4000, drabWallColor, "#~#");
         gameObjects[14] = new Box(990, 550, 10, 10, drabWallColor, "#~#");
 
-        gameObjects[15] = new Box(3000, 600, 100, 50, drabWallColor, "+400picf0.125~#");
+        gameObjects[15] = new Box(2800, 600, 300, 50, drabWallColor, "+400picn0.2~#");
        // gameObjects[16] = new Box(3250, 524, 5, 5, brightWallColor, "#~#");
-        gameObjects[17] = new Box(3600, 525, 375, 3000, drabWallColor, "#~#");
+        gameObjects[17] = new Box(3600, 525, 365, 3000, drabWallColor, "#~#");
         gameObjects[18] = new Checkpoint(3750f, 515, 45, 10, checkpointColor);
-        gameObjects[19] = new Box(4140, -700, 60, 3000, drabWallColor, "#~#");
-        gameObjects[20] = new Box(3650, -700, 60, 1000, drabWallColor, "#~#");
-        gameObjects[21] = new Box(3925, 425, 50, 100, drabWallColor, "#~#");
+        gameObjects[19] = new Box(4140, -700, 60, 3000, drabWallColor, "-50pls0.14~#");
+        gameObjects[20] = new Box(3650, -700, 60, 1000, drabWallColor, "+50pls0.1~#");
+        gameObjects[21] = new Box(3925, 425, 50, 1000, drabWallColor, "#~#");
         gameObjects[22] = new Box(3710, 290, 10, 10, drabWallColor, "#~#");
         gameObjects[23] = new Box(3950, 175, 20, 5, drabWallColor, "#~#");
-        gameObjects[24] = new Box(3710, 30, 50, 10, drabWallColor, "#~#");
-        gameObjects[25] = new Box(4050, -20, 150, 10, drabWallColor, "#~#");
-        gameObjects[26] = new Box(300, -1000, 500, 50, drabWallColor, "#~+4000picn0.125");
+        gameObjects[24] = new Box(3710, 30, 10, 10, drabWallColor, "#~#");
+        gameObjects[25] = new Box(4130, 0, 10, 10, drabWallColor, "#~#");
+        gameObjects[26] = new Box(300, 700, 50, 50, drabWallColor, "+50pls0.125~#");
         //gameObjects[26] = new Box(4050, -20, 150, 10, drabWallColor, "#~#");
         //gameObjects[27] = new Box(200, 400, 500, 50, drabWallColor, "+500pic0.125~#");
         //gameObjects[27] = new DeathBox(200, 700, 50, 50, deathBoxColor);
@@ -139,9 +139,9 @@ public class Game extends JPanel implements KeyListener {
         }
 
         boolean isBoundingBoxColliding = pPos.getX() + pVel.getX() < oPos.getX() + oDim.getX() + oVel.getX() &&
-                pPos.getX() + pDim.getX() + pVel.getX() > oPos.getX() + oVel.getX() &&
-                pPos.getY() + pVel.getY() < oPos.getY() + oDim.getY() + oVel.getY() &&
-                pPos.getY() + pDim.getY() + pVel.getY() > oPos.getY() + oVel.getY();
+                                         pPos.getX() + pDim.getX() + pVel.getX() > oPos.getX() + oVel.getX() &&
+                                         pPos.getY() + pVel.getY() < oPos.getY() + oDim.getY() + oVel.getY() &&
+                                         pPos.getY() + pDim.getY() + pVel.getY() > oPos.getY() + oVel.getY();
 
         if(!isBoundingBoxColliding) return;
 
@@ -164,13 +164,10 @@ public class Game extends JPanel implements KeyListener {
             if(pPos.getY() < oPos.getY()) {
                 pPos.addXY(0, -overlapY);
                 player.setGrounded(true);
-                player.getVelocity().setXY(player.getVelocity().getX() * 0.97f, oVel.getY());
-
-                pPos.setX(pPos.getX() + oVel.getX());
+                player.getVelocity().setXY(player.getVelocity().getX() * 0.97f, oVel.getY() * 0.9f);
             } else {
                 pPos.addXY(0, overlapY);
                 player.getVelocity().setXY(player.getVelocity().getX(), oVel.getY());
-
             }
         }
 

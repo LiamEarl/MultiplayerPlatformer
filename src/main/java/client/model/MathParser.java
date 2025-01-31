@@ -6,26 +6,35 @@ public class MathParser {
 
         String[] operations = expression.split(";");
         for(String operation : operations) {
-            if(operation.charAt(0) == '+') {
-                if(operation.contains("picn")) {
+            if(operation.charAt(0) == '+' || operation.charAt(0) == '-') {
+
+                int modifier = 1;
+                if(operation.charAt(0) == '+') {
                     operation.replace("+", "");
+                }else {
+                    operation.replace("-", "");
+                    modifier = -1;
+                }
+
+                if(operation.contains("picn")) {
                     String[] factors = operation.split("picn");
-                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseNormal((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (modifier * Float.parseFloat(factors[0]) * pieceWiseNormal((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("picf")) {
-                    operation.replace("+", "");
                     String[] factors = operation.split("picf");
-                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseFast((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (modifier * Float.parseFloat(factors[0]) * pieceWiseFast((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("sin")) {
-                    operation.replace("+", "");
                     String[] factors = operation.split("sin");
-                    value += (float) (Float.parseFloat(factors[0]) * Math.sin((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (modifier * Float.parseFloat(factors[0]) * Math.sin((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("cos")) {
-                    operation.replace("+", "");
                     String[] factors = operation.split("cos");
-                    value += (float) (Float.parseFloat(factors[0]) * Math.sin((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (modifier * Float.parseFloat(factors[0]) * Math.cos((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    continue;
+                }else if(operation.contains("pls")) {
+                    String[] factors = operation.split("pls");
+                    value += (float) (modifier * Float.parseFloat(factors[0]) * pulse((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
                     continue;
                 }
                 value += Float.parseFloat(operation.substring(1));
@@ -64,5 +73,9 @@ public class MathParser {
         }else {
             return 1;
         }
+    }
+    static public double pulse(double value) {
+        double mapped = value % 6.28;
+        return Math.pow(2.7182, -1000 * Math.pow(mapped - 3.14159, 2));
     }
 }

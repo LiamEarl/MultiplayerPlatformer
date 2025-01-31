@@ -4,7 +4,7 @@ import java.awt.*;
 
 public class Player implements GameObject {
     private EntityData pData;
-    private Vector2D vel, dim, spawnPoint;
+    private Vector2D vel, dim, spawnPoint, lastPos;
     private Color col;
     private float speed;
     private boolean grounded = false;
