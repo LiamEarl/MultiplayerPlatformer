@@ -6,6 +6,7 @@ import java.net.ConnectException;
 import java.net.Socket;
 
 public class GameClient {
+    private static float ASSUMED_UPDATE_TIME = 16;
 
     private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
         Socket serverSocket = new Socket("localhost", 8888); // Server IP and port
@@ -25,9 +26,12 @@ public class GameClient {
 
             //for(float i = 0; i < 6.28; i+= 0.005) {
             //    System.out.println(MathParser.pieceWiseFast(i));            }
+            long lastUpdate = System.currentTimeMillis();
 
             while(true) {
-                Thread.sleep(16);
+                long dt = System.currentTimeMillis() - lastUpdate;
+                float dtMod = dt / ASSUMED_UPDATE_TIME;
+                lastUpdate = System.currentTimeMillis();
                 currentTick ++;
 
                 if(serverConnection == null) {
@@ -48,9 +52,9 @@ public class GameClient {
                     continue;
                 }
 
-                game.handleKeyInputs();
-                game.updateGameObjects();
-                game.checkPlayerCollisions();
+                game.handleKeyInputs(dtMod);
+                game.updateGameObjects(dtMod);
+                game.checkPlayerCollisions(dtMod);
                 game.renderScene();
 
                 if(serverConnection.getPlayerId() != -1) {
@@ -58,6 +62,7 @@ public class GameClient {
                         serverConnection.writeToServer();
                     }
                 }
+                Thread.sleep(1);
             }
         }catch (Exception e) {
             e.printStackTrace();

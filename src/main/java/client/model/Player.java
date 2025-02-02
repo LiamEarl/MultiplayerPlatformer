@@ -19,15 +19,15 @@ public class Player implements GameObject {
     }
 
     @Override
-    public void update() {
-        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX()), this.pData.getPos().getY() + (this.vel.getY()));
-        this.vel.scale(1f - (0.02f));
-        this.vel.addXY(0, 0.7f);
+    public void update(float dtMod) {
+        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX() * dtMod), this.pData.getPos().getY() + (this.vel.getY() * dtMod));
+        this.vel.scale(1f - (0.02f * dtMod) );
+        this.vel.addXY(0, 0.7f * dtMod);
         this.grounded = false;
     }
-    public void updateAsGhost() {
-        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX()), this.pData.getPos().getY() + (this.vel.getY()));
-        this.vel.scale(1f - (0.02f));
+    public void updateAsGhost(float dtMod) {
+        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX() * dtMod), this.pData.getPos().getY() + (this.vel.getY() * dtMod));
+        this.vel.scale(1f - (0.02f * dtMod));
     }
     @Override
     public Vector2D getVelocity() {

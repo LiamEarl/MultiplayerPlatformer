@@ -23,7 +23,7 @@ public class DeathBox implements GameObject {
         return pos;
     }
     @Override
-    public void update() {};
+    public void update(float dtMod) {};
     public void setPos(Vector2D pos) {
         this.pos = pos;
     }
