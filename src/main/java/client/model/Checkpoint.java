@@ -19,7 +19,7 @@ public class Checkpoint implements GameObject {
         return dim;
     }
     @Override
-    public void update() {};
+    public void update(float dtMod) {};
     @Override
     public Vector2D getPos() {
         return pos;

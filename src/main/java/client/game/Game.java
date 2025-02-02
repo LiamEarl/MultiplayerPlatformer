@@ -37,7 +37,7 @@ public class Game extends JPanel implements KeyListener {
         repaint();
     }
 
-    void handleKeyInputs() {
+    void handleKeyInputs(float dtMod) {
         if (this.keyPressed[KeyEvent.VK_BACK_SLASH] && this.keyPressed[KeyEvent.VK_SHIFT]) {
             godMode = true;
         }else if (this.keyPressed[KeyEvent.VK_SLASH]) {
@@ -46,10 +46,10 @@ public class Game extends JPanel implements KeyListener {
 
         if(!godMode) {
             if (this.keyPressed[KeyEvent.VK_LEFT]) {
-                this.player.getVelocity().addXY(-player.getSpeed(), 0);
+                this.player.getVelocity().addXY(-player.getSpeed() * dtMod, 0);
             }
             if (this.keyPressed[KeyEvent.VK_RIGHT]) {
-                this.player.getVelocity().addXY(player.getSpeed(), 0);
+                this.player.getVelocity().addXY(player.getSpeed() * dtMod, 0);
             }
             if (this.keyPressed[KeyEvent.VK_UP] && player.getGrounded()) {
                 this.player.getVelocity().addXY(0,-17);
@@ -57,16 +57,16 @@ public class Game extends JPanel implements KeyListener {
         } else {
             this.player.setVel(new Vector2D(0, 0));
             if (this.keyPressed[KeyEvent.VK_LEFT]) {
-                this.player.getPos().addXY(-25, 0);
+                this.player.getPos().addXY(-25 * dtMod, 0);
             }
             if (this.keyPressed[KeyEvent.VK_RIGHT]) {
-                this.player.getPos().addXY(25, 0);
+                this.player.getPos().addXY(25 * dtMod, 0);
             }
             if (this.keyPressed[KeyEvent.VK_UP]) {
-                this.player.getPos().addXY(0, -25);
+                this.player.getPos().addXY(0, -25 * dtMod);
             }
             if (this.keyPressed[KeyEvent.VK_DOWN]) {
-                this.player.getPos().addXY(0, 25);
+                this.player.getPos().addXY(0, 25 * dtMod);
             }
         }
     }
@@ -100,8 +100,8 @@ public class Game extends JPanel implements KeyListener {
         //gameObjects[27] = new DeathBox(200, 700, 50, 50, deathBoxColor);
     }
 
-    void updateGameObjects() {
-        this.player.update();
+    void updateGameObjects(float dtMod) {
+        this.player.update(dtMod);
         for(GameObject gameObject : this.gameObjects) {
             if(gameObject == null) continue;
 
@@ -109,15 +109,15 @@ public class Game extends JPanel implements KeyListener {
                 Player ghost = (Player) gameObject;
                 if(ghost.getPlayerData().getId() == this.player.getPlayerData().getId()) continue;
 
-                ghost.updateAsGhost();
+                ghost.updateAsGhost(dtMod);
                 continue;
             }
 
-            gameObject.update();
+            gameObject.update(dtMod);
         }
     }
 
-    void checkPlayerCollisions() {
+    void checkPlayerCollisions(float dtMod) {
 
         if(player.getPos().getY() > 3000) player.respawn();
 
@@ -129,14 +129,14 @@ public class Game extends JPanel implements KeyListener {
                     Player currentPlayer = (Player) this.gameObjects[i];
                     if(currentPlayer == null) continue;
                     if(i == this.player.getPlayerData().getId() && godMode) continue;
-                    handlePlayerCollision(currentPlayer, obj);
+                    handlePlayerCollision(currentPlayer, obj, dtMod);
                 }
             }
         }
     }
 
 
-    private void handlePlayerCollision(Player player, GameObject toCollide) {
+    private void handlePlayerCollision(Player player, GameObject toCollide, float dtMod) {
         Vector2D pPos = player.getPos();
         Vector2D pDim = player.getDim();
         Vector2D pVel = player.getVelocity();
@@ -180,7 +180,7 @@ public class Game extends JPanel implements KeyListener {
             if(pPos.getY() < oPos.getY()) {
                 pPos.addXY(0, -overlapY);
                 player.setGrounded(true);
-                player.getVelocity().setXY(player.getVelocity().getX() * 0.97f, oVel.getY() * 0.9f);
+                player.getVelocity().setXY(player.getVelocity().getX() * (1 - 0.03f * dtMod), oVel.getY() * 0.9f);
             } else {
                 pPos.addXY(0, overlapY);
                 player.getVelocity().setXY(player.getVelocity().getX(), oVel.getY());
