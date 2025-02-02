@@ -17,7 +17,9 @@ public class EntityData implements Serializable {
     public void setPos(Vector2D pos) {
         this.pos = pos;
     }
-
+    public void setId(int id) {
+        this.id = id;
+    }
     public int getId() {
         return id;
     }

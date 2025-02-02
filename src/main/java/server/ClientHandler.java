@@ -5,17 +5,15 @@ import client.model.Vector2D;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-class ClientHandler extends NetworkCommunicator implements Runnable {
+class ClientHandler implements Runnable {
     private Socket clientSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private EntityData pData;
-    private CopyOnWriteArrayList<EntityData> updates;
+    private EntityData clientUpdate;
 
     public ClientHandler(Socket clientSocket, int clientId) throws IOException {
-        this.updates = new CopyOnWriteArrayList<>();
         this.clientSocket = clientSocket;
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
@@ -34,17 +32,13 @@ class ClientHandler extends NetworkCommunicator implements Runnable {
                     if (fromClient instanceof EntityData) {
                         //System.out.println("Receiving Client Info" + ((PlayerData) fromClient).getPos().getX() + " " + ((PlayerData) fromClient).getPos().getY());
                         this.pData = (EntityData) fromClient;
-                        this.updates.add(this.pData);
+                        clientUpdate = (EntityData) fromClient;
                     }
                 }catch(EOFException ignored) {}
-
-
             }
-
         } catch(IOException e) {
             e.printStackTrace();
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -55,11 +49,17 @@ class ClientHandler extends NetworkCommunicator implements Runnable {
         this.out.flush();
     }
 
-    public CopyOnWriteArrayList<EntityData> getUpdates() {
-        return this.updates;
+    void uploadToClient(EntityData[] entityData) throws IOException {
+        this.out.reset();
+        this.out.writeObject(entityData);
+        this.out.flush();
     }
-    public void wipeUpdates() {
-        this.updates.clear();
+
+    public EntityData getClientUpdate() {
+        return this.clientUpdate;
+    }
+    public void wipeUpdate() {
+        this.clientUpdate = null;
     }
     EntityData getPlayerData() {
         return this.pData;

@@ -1,6 +1,7 @@
 package client.model;
 
 import java.io.Serializable;
+import java.util.Vector;
 
 public class Vector2D implements Serializable {
     private float x, y;
@@ -8,6 +9,10 @@ public class Vector2D implements Serializable {
     public Vector2D(float x, float y) {
         this.x = x;
         this.y = y;
+    }
+    public Vector2D(Vector2D v) {
+        this.x = v.getX();
+        this.y = v.getY();
     }
 
     public Vector2D copy() {
@@ -37,6 +42,11 @@ public class Vector2D implements Serializable {
     public void scale(float scale) {
         this.x *= scale;
         this.y *= scale;
+    }
+
+    public void divide(float toDivide) {
+        this.x /= toDivide;
+        this.y /= toDivide;
     }
 
     public void setXY(float x, float y) {

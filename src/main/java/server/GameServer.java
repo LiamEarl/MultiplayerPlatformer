@@ -7,10 +7,13 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameServer {
     public static void main(String[] args) {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
+
+        EntityData[] updates = new EntityData[10];
 
         try {
             ServerSocket serverSocket = new ServerSocket();
@@ -22,20 +25,29 @@ public class GameServer {
             Thread incomingClients = new Thread(incoming);
             incomingClients.start();
 
+            mainLoop:
             while (true) {
-                //System.out.println("Updating");
+                Thread.sleep(4);
+
                 for(ClientHandler client : clientHandlers) {
-
-                    for(EntityData update : client.getUpdates()) {
-
-                        for (ClientHandler toSend : clientHandlers) {
-                            if (client == toSend) continue;
-                            toSend.uploadToClient(update);
-                        }
-                    }
-                    client.wipeUpdates();
+                    EntityData playerUpdate = client.getClientUpdate();
+                    if(playerUpdate == null) continue;
+                    updates[client.getPlayerData().getId()] = playerUpdate;
+                    client.wipeUpdate();
                 }
-                Thread.sleep(5);
+
+                for(int i = 0; i < updates.length; i++) {
+                    if(updates[i] != null) break;
+                    if(i == clientHandlers.size() - 1) continue mainLoop;
+                }
+
+                for(ClientHandler client : clientHandlers) {
+                    EntityData[] modified = Arrays.copyOf(updates, updates.length);
+                    modified[client.getPlayerData().getId()] = null;
+                    client.uploadToClient(modified);
+                }
+
+                Arrays.fill(updates, null);
             }
         }catch (IOException e) {
             e.printStackTrace();
@@ -43,7 +55,6 @@ public class GameServer {
             throw new RuntimeException(e);
         }
     }
-
 }
 
 class AcceptIncomingClients implements Runnable {

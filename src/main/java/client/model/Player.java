@@ -25,6 +25,10 @@ public class Player implements GameObject {
         this.vel.addXY(0, 0.7f);
         this.grounded = false;
     }
+    public void updateAsGhost() {
+        this.pData.getPos().setXY(this.pData.getPos().getX() + (this.vel.getX()), this.pData.getPos().getY() + (this.vel.getY()));
+        this.vel.scale(1f - (0.02f));
+    }
     @Override
     public Vector2D getVelocity() {
         return vel;
@@ -38,12 +42,15 @@ public class Player implements GameObject {
         return this.pData.getPos();
     }
     public EntityData getPlayerData() {return this.pData; }
-    public void setPlayerData(EntityData newData) {this.pData = newData; }
+    public void setPlayerData(EntityData newData) {
+        this.pData.setPos(newData.getPos());
+        this.pData.setId(newData.getId());
+    }
     public Color getColor() {
         return this.col;
     }
     public void setVel(Vector2D vel) {
-        this.vel = vel;
+        this.vel.setXY(vel.getX(), vel.getY());
     }
     public void setPos(Vector2D pos) {this.pData.getPos().set(pos); }
     public float getSpeed() {

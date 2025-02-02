@@ -54,7 +54,7 @@ public class GameClient {
                 game.renderScene();
 
                 if(serverConnection.getPlayerId() != -1) {
-                    if (gameObjects[serverConnection.getPlayerId()].getVelocity().length() > 0.5f || currentTick % 10 == 0) {
+                    if ((gameObjects[serverConnection.getPlayerId()].getVelocity().length() > 0.5f && currentTick % 2 == 0) || currentTick % 10 == 0) {
                         serverConnection.writeToServer();
                     }
                 }

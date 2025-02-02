@@ -85,8 +85,8 @@ public class Game extends JPanel implements KeyListener {
 
         gameObjects[15] = new Box(2800, 600, 300, 50, drabWallColor, "+400picn0.2~#");
        // gameObjects[16] = new Box(3250, 524, 5, 5, brightWallColor, "#~#");
-        gameObjects[17] = new Box(3600, 525, 365, 3000, drabWallColor, "#~#");
-        gameObjects[18] = new Checkpoint(3750f, 515, 45, 10, checkpointColor);
+        gameObjects[17] = new Box(3600, 525, 70, 3000, drabWallColor, "#~#");
+        gameObjects[18] = new Checkpoint(3600f, 515, 70, 10, checkpointColor);
         gameObjects[19] = new Box(4140, -700, 60, 3000, drabWallColor, "-50pls0.14~#");
         gameObjects[20] = new Box(3650, -700, 60, 1000, drabWallColor, "+50pls0.1~#");
         gameObjects[21] = new Box(3925, 425, 50, 1000, drabWallColor, "#~#");
@@ -103,22 +103,38 @@ public class Game extends JPanel implements KeyListener {
     void updateGameObjects() {
         this.player.update();
         for(GameObject gameObject : this.gameObjects) {
-            if(gameObject instanceof Player || gameObject == null) continue;
+            if(gameObject == null) continue;
+
+            if(gameObject instanceof Player) {
+                Player ghost = (Player) gameObject;
+                if(ghost.getPlayerData().getId() == this.player.getPlayerData().getId()) continue;
+
+                ghost.updateAsGhost();
+                continue;
+            }
+
             gameObject.update();
         }
     }
 
     void checkPlayerCollisions() {
-        if(godMode) return;
 
         if(player.getPos().getY() > 3000) player.respawn();
 
         for(GameObject obj : this.gameObjects) {
             if(obj != null && !(obj instanceof Player)) {
-                handlePlayerCollision(this.player, obj);
+
+                for(int i = 0; i < 10; i++) {
+                    if(!(this.gameObjects[i] instanceof Player)) continue;
+                    Player currentPlayer = (Player) this.gameObjects[i];
+                    if(currentPlayer == null) continue;
+                    if(i == this.player.getPlayerData().getId() && godMode) continue;
+                    handlePlayerCollision(currentPlayer, obj);
+                }
             }
         }
     }
+
 
     private void handlePlayerCollision(Player player, GameObject toCollide) {
         Vector2D pPos = player.getPos();
