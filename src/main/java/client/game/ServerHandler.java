@@ -1,26 +1,18 @@
 package client.game;
 import client.model.GameObject;
 import client.model.Player;
-import client.model.EntityData;
 import client.model.Vector2D;
 
-import java.awt.*;
 import java.io.*;
 import java.net.Socket;
-import java.util.Vector;
 
 class ServerHandler implements Runnable {
     private Socket serverSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private GameObject[] gameObjects;
-    private EntityData mainPlayerData;
-
-    private final Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
-    private final Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(31.25f, 80)};
-
-    private long[] updateTimes = new long[10];
-    private Vector2D[] lastPositions = new Vector2D[10];
+    private Player mainPlayer;
+    private Vector2D lastVelocity;
 
 
     ServerHandler(Socket serverSocket, GameObject[] gameObjects) throws IOException {
@@ -28,6 +20,7 @@ class ServerHandler implements Runnable {
         this.out = new ObjectOutputStream(serverSocket.getOutputStream());
         this.in = new ObjectInputStream(serverSocket.getInputStream());
         this.gameObjects = gameObjects;
+        this.lastVelocity = new Vector2D(0, 0);
     }
 
     @Override
@@ -37,21 +30,11 @@ class ServerHandler implements Runnable {
                 try {
                     Object fromServerObject = this.in.readObject();
                     if(fromServerObject == null) continue;
-
-                    if (fromServerObject instanceof EntityData) {
-                        EntityData fromServer = (EntityData) fromServerObject;
-                        if(this.mainPlayerData == null) {
-                            this.mainPlayerData = fromServer;
-                            this.gameObjects[this.mainPlayerData.getId()] = new Player(this.mainPlayerData, playerColorCodes[this.mainPlayerData.getId()], dimensions[this.mainPlayerData.getId()]);
-                            System.out.println("INITIALIZED PLAYER " + fromServer.getId());
-                        }else {
-                            updatePlayers(fromServer);
-                        }
-                    }else if(fromServerObject instanceof EntityData[]) {
-                        EntityData[] fromServer = (EntityData[]) fromServerObject;
-                        for(EntityData data : fromServer) {
-                            if(data == null) continue;
-                            updatePlayers(data);
+                    if(fromServerObject instanceof Player[]) {
+                        Player[] fromServer = (Player[]) fromServerObject;
+                        for(Player playerUpdate : fromServer) {
+                            if(playerUpdate == null) continue;
+                            updatePlayers(playerUpdate);
                         }
                     }
                 }catch(EOFException ignored) {} catch (ClassNotFoundException e) {
@@ -63,39 +46,47 @@ class ServerHandler implements Runnable {
         }
     }
 
-    void updatePlayers(EntityData data) {
-        int id = data.getId();
+    void updatePlayers(Player playerUpdate) {
+        if(playerUpdate == null) return;
+
+        int id = playerUpdate.getId();
 
         if (gameObjects[id] == null) {
-            this.gameObjects[id] = new Player(data, playerColorCodes[id], dimensions[id]);
-            System.out.println("INITIALIZED PLAYER " + data.getId());
+            this.gameObjects[id] = playerUpdate;
+            if(this.mainPlayer == null) this.mainPlayer = playerUpdate;
+            System.out.println("INITIALIZED PLAYER " + playerUpdate.getId());
         } else {
             Player ghost = (Player) gameObjects[id];
-            long timeDifference = System.currentTimeMillis() - updateTimes[id];
-
-            Vector2D velocity = data.getPos().copy();
-            velocity.subtract(lastPositions[id]);
-            System.out.println("CurrentPosition + " + data.getPos() + " OldPosition: " + lastPositions[id] + " dt: " + timeDifference + " Change: " + velocity);
-            velocity.divide((float) timeDifference);
-            velocity.scale(16f); // Whatever the sleep method contains in the main client thread
-            ghost.setPlayerData(data);
-            ghost.setVel(velocity);
+            ghost.setPos(playerUpdate.getPos());
+            ghost.setVel(playerUpdate.getVelocity());
         }
-
-        lastPositions[id] = new Vector2D(data.getPos().copy());
-        updateTimes[id] = System.currentTimeMillis();
-
     }
 
     void writeToServer() throws IOException {
         this.out.reset();
-        EntityData stuff = new EntityData(new Vector2D(this.mainPlayerData.getPos().getX(), this.mainPlayerData.getPos().getY()), this.mainPlayerData.getId());
-        this.out.writeObject(stuff);
+        this.out.writeObject(this.mainPlayer);
         this.out.flush();
     }
 
+    long handleOutgoingUpdates(long sendToServerTimer) throws IOException {
+        if(this.mainPlayer != null) {
+            long diff = System.currentTimeMillis() - sendToServerTimer;
+            Vector2D velocityDiff = new Vector2D(mainPlayer.getVelocity().getX() - this.lastVelocity.getX(), mainPlayer.getVelocity().getY() - this.lastVelocity.getY());
+            float magnitude = velocityDiff.length();
+            //if ((magnitude > 0.1f && diff > 16) || diff > 1000 || magnitude > 5) {
+            if ((magnitude > 0.1f && diff > 500)) {
+                writeToServer();
+                this.lastVelocity = this.mainPlayer.getVelocity().copy();
+                System.out.println("writing to server" + System.currentTimeMillis());
+                return System.currentTimeMillis();
+            }
+        }
+        return sendToServerTimer;
+    }
+
+
     int getPlayerId() {
-        if(this.mainPlayerData == null) return -1;
-        return this.mainPlayerData.getId();
+        if(this.mainPlayer == null) return -1;
+        return this.mainPlayer.getId();
     }
 }

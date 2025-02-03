@@ -1,6 +1,6 @@
 package server;
 
-import client.model.EntityData;
+import client.model.Player;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,11 +13,11 @@ public class GameServer {
     public static void main(String[] args) {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
 
-        EntityData[] updates = new EntityData[10];
+        Player[] updates = new Player[10];
 
         try {
             ServerSocket serverSocket = new ServerSocket();
-            serverSocket.bind(new InetSocketAddress("localhost", 8888));//192.168.12.113
+            serverSocket.bind(new InetSocketAddress(8888));//192.168.12.113
 
             System.out.println("Server started on port: " + serverSocket.getLocalPort());
 
@@ -30,7 +30,7 @@ public class GameServer {
                 Thread.sleep(4);
 
                 for(ClientHandler client : clientHandlers) {
-                    EntityData playerUpdate = client.getClientUpdate();
+                    Player playerUpdate = client.getClientUpdate();
                     if(playerUpdate == null) continue;
                     updates[client.getPlayerData().getId()] = playerUpdate;
                     client.wipeUpdate();
@@ -40,9 +40,10 @@ public class GameServer {
                     if(updates[i] != null) break;
                     if(i == clientHandlers.size() - 1) continue mainLoop;
                 }
+                System.out.println("recieving update from client" + System.currentTimeMillis());
 
                 for(ClientHandler client : clientHandlers) {
-                    EntityData[] modified = Arrays.copyOf(updates, updates.length);
+                    Player[] modified = Arrays.copyOf(updates, updates.length);
                     modified[client.getPlayerData().getId()] = null;
                     client.uploadToClient(modified);
                 }

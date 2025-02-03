@@ -1,8 +1,7 @@
 package server;
-
-import client.model.EntityData;
+import client.model.Player;
 import client.model.Vector2D;
-
+import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 
@@ -10,15 +9,20 @@ class ClientHandler implements Runnable {
     private Socket clientSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private EntityData pData;
-    private EntityData clientUpdate;
+    private Player player;
+    private Player clientUpdate;
+
+    private final Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
+    private final Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(31.25f, 80)};
 
     public ClientHandler(Socket clientSocket, int clientId) throws IOException {
         this.clientSocket = clientSocket;
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
-        this.pData = new EntityData(new Vector2D(100, 650), clientId);
-        uploadToClient(this.pData);
+        this.player = new Player(new Vector2D(100, 650), playerColorCodes[clientId], dimensions[clientId], clientId);
+        Player[] initial = new Player[10];
+        initial[clientId] = this.player;
+        uploadToClient(initial);
     }
 
     @Override
@@ -26,13 +30,12 @@ class ClientHandler implements Runnable {
         try {
 
             while (this.clientSocket.isConnected()) {
-                //Thread.sleep(16);
                 try {
                     Object fromClient = this.in.readObject();
-                    if (fromClient instanceof EntityData) {
+                    if (fromClient instanceof Player) {
                         //System.out.println("Receiving Client Info" + ((PlayerData) fromClient).getPos().getX() + " " + ((PlayerData) fromClient).getPos().getY());
-                        this.pData = (EntityData) fromClient;
-                        clientUpdate = (EntityData) fromClient;
+                        this.player = (Player) fromClient;
+                        clientUpdate = (Player) fromClient;
                     }
                 }catch(EOFException ignored) {}
             }
@@ -43,26 +46,20 @@ class ClientHandler implements Runnable {
         }
     }
 
-    void uploadToClient(EntityData entityData) throws IOException {
+    void uploadToClient(Player[] entityData) throws IOException {
         this.out.reset();
         this.out.writeObject(entityData);
         this.out.flush();
     }
 
-    void uploadToClient(EntityData[] entityData) throws IOException {
-        this.out.reset();
-        this.out.writeObject(entityData);
-        this.out.flush();
-    }
-
-    public EntityData getClientUpdate() {
+    public Player getClientUpdate() {
         return this.clientUpdate;
     }
     public void wipeUpdate() {
         this.clientUpdate = null;
     }
-    EntityData getPlayerData() {
-        return this.pData;
+    Player getPlayerData() {
+        return this.player;
     }
 
 }

@@ -83,7 +83,7 @@ public class Game extends JPanel implements KeyListener {
         gameObjects[13] = new Box(1000, 400, 10, 4000, drabWallColor, "#~#");
         gameObjects[14] = new Box(990, 550, 10, 10, drabWallColor, "#~#");
 
-        gameObjects[15] = new Box(2800, 600, 300, 50, drabWallColor, "+400picn0.2~#");
+      //  gameObjects[15] = new Box(2800, 600, 300, 50, drabWallColor, "+400picn0.2~#");
        // gameObjects[16] = new Box(3250, 524, 5, 5, brightWallColor, "#~#");
         gameObjects[17] = new Box(3600, 525, 70, 3000, drabWallColor, "#~#");
         gameObjects[18] = new Checkpoint(3600f, 515, 70, 10, checkpointColor);
@@ -94,22 +94,19 @@ public class Game extends JPanel implements KeyListener {
         gameObjects[23] = new Box(3950, 175, 20, 5, drabWallColor, "#~#");
         gameObjects[24] = new Box(3710, 30, 10, 10, drabWallColor, "#~#");
         gameObjects[25] = new Box(4130, 0, 10, 10, drabWallColor, "#~#");
-        gameObjects[26] = new Box(300, 700, 50, 50, drabWallColor, "+50pls0.125~#");
+        //gameObjects[26] = new Box(300, 700, 50, 50, drabWallColor, "-50pls0.125~#");
         //gameObjects[26] = new Box(4050, -20, 150, 10, drabWallColor, "#~#");
         //gameObjects[27] = new Box(200, 400, 500, 50, drabWallColor, "+500pic0.125~#");
         //gameObjects[27] = new DeathBox(200, 700, 50, 50, deathBoxColor);
     }
 
     void updateGameObjects(float dtMod) {
-        this.player.update(dtMod);
         for(GameObject gameObject : this.gameObjects) {
             if(gameObject == null) continue;
 
             if(gameObject instanceof Player) {
-                Player ghost = (Player) gameObject;
-                if(ghost.getPlayerData().getId() == this.player.getPlayerData().getId()) continue;
-
-                ghost.updateAsGhost(dtMod);
+                Player playerObject = (Player) gameObject;
+                playerObject.update(dtMod);
                 continue;
             }
 
@@ -128,7 +125,7 @@ public class Game extends JPanel implements KeyListener {
                     if(!(this.gameObjects[i] instanceof Player)) continue;
                     Player currentPlayer = (Player) this.gameObjects[i];
                     if(currentPlayer == null) continue;
-                    if(i == this.player.getPlayerData().getId() && godMode) continue;
+                    if(i == this.player.getId() && godMode) continue;
                     handlePlayerCollision(currentPlayer, obj, dtMod);
                 }
             }

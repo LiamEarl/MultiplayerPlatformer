@@ -6,11 +6,11 @@ import java.net.ConnectException;
 import java.net.Socket;
 
 public class GameClient {
-    private static float ASSUMED_UPDATE_TIME = 16;
+    private static final float ASSUMED_UPDATE_TIME = 16;
 
     private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
-        Socket serverSocket = new Socket("localhost", 8888); // Server IP and port
-        System.out.println("Server Connected At IP: " + serverSocket.getLocalSocketAddress());
+        Socket serverSocket = new Socket("the-tower.net", 8888); // Server IP and port
+        System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
         ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
         Thread serverThread = new Thread(serverHandler);
         serverThread.start();
@@ -24,9 +24,8 @@ public class GameClient {
             Game game = null;
             int currentTick = 0;
 
-            //for(float i = 0; i < 6.28; i+= 0.005) {
-            //    System.out.println(MathParser.pieceWiseFast(i));            }
             long lastUpdate = System.currentTimeMillis();
+            long sendToServerTimer = System.currentTimeMillis();
 
             while(true) {
                 long dt = System.currentTimeMillis() - lastUpdate;
@@ -47,7 +46,8 @@ public class GameClient {
                     if(serverConnection == null) continue;
                     if (serverConnection.getPlayerId() != -1) {
                         System.out.println("ATTEMPTING GAME CREATION");
-                        game = new Game((Player) gameObjects[serverConnection.getPlayerId()], gameObjects);
+                        Player mainPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
+                        game = new Game(mainPlayer, gameObjects);
                     }
                     continue;
                 }
@@ -57,12 +57,9 @@ public class GameClient {
                 game.checkPlayerCollisions(dtMod);
                 game.renderScene();
 
-                if(serverConnection.getPlayerId() != -1) {
-                    if ((gameObjects[serverConnection.getPlayerId()].getVelocity().length() > 0.5f && currentTick % 2 == 0) || currentTick % 10 == 0) {
-                        serverConnection.writeToServer();
-                    }
-                }
-                Thread.sleep(1);
+                sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
+
+                Thread.sleep(2);
             }
         }catch (Exception e) {
             e.printStackTrace();
