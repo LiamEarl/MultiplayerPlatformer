@@ -26,10 +26,11 @@ public class GameClient {
 
             long lastUpdate = System.currentTimeMillis();
             long sendToServerTimer = System.currentTimeMillis();
-
+            float fps = 60;
             while(true) {
                 long dt = System.currentTimeMillis() - lastUpdate;
                 float dtMod = dt / ASSUMED_UPDATE_TIME;
+                fps = (float) 1 / dt * 1000;
                 lastUpdate = System.currentTimeMillis();
                 currentTick ++;
 
@@ -37,8 +38,10 @@ public class GameClient {
                     try {
                         serverConnection = handleServerConnection(gameObjects);
                     } catch (ConnectException e) {
-                        if(currentTick % 60 == 0)
+                        if(System.currentTimeMillis() - sendToServerTimer > 1000) {
                             System.out.println("Failed To Connect To The Server. Listening For A Connection.");
+                            sendToServerTimer = System.currentTimeMillis();
+                        }
                     }
                 }
 
@@ -55,11 +58,11 @@ public class GameClient {
                 game.handleKeyInputs(dtMod);
                 game.updateGameObjects(dtMod, serverConnection.getServerTime());
                 game.checkPlayerCollisions(dtMod);
-                game.renderScene();
+                game.renderScene(fps);
 
                 sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
 
-                Thread.sleep(2);
+                Thread.sleep(1);
             }
         }catch (Exception e) {
             e.printStackTrace();

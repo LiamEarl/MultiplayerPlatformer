@@ -11,6 +11,7 @@ public class Player implements GameObject, Serializable {
     private int id;
     private boolean grounded = false;
     private boolean god = false;
+    private String communication;
 
     public Player(Vector2D position, Color color, Vector2D dimensions, int id) {
         this.pos = position;
@@ -21,6 +22,7 @@ public class Player implements GameObject, Serializable {
         this.col = color;
         this.spawnPoint = new Vector2D(pos.getX(), pos.getY());
         this.god = false;
+        this.communication = "";
     }
 
     @Override
@@ -71,4 +73,6 @@ public class Player implements GameObject, Serializable {
     public void setSpawnPoint(Vector2D spawnPoint) {this.spawnPoint = spawnPoint;}
     public void setGodMode(boolean toSet) {this.god = toSet;}
     public boolean getGodMode() {return this.god;}
+    public String getCommunication() {return communication;}
+    public void setCommunication(String communication) {this.communication = communication;}
 }

@@ -1,13 +1,12 @@
 package client.game;
 import client.model.*;
 import client.model.Box;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.round;
 
 public class Game extends JPanel implements KeyListener, MouseWheelListener, MouseListener, MouseMotionListener {
 
@@ -18,6 +17,10 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     private final int WINDOW_HEIGHT = 800;
     private double zoomFactor = 1f;
     private Vector2D mouseDragOffset = new Vector2D(0, 0);
+    private float fps = 60;
+    private boolean typing = false;
+    private String currentInput = "";
+    private ArrayList<String> messageHistory = new ArrayList<>();
 
     Game(Player player, GameObject[] gameObjects) {
         this.player = player;
@@ -32,16 +35,20 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         frame.addMouseListener(this);
         frame.addMouseMotionListener(this);
         frame.add(this);
-        frame.setVisible(true);
 
         createGameObjects();
+
+        frame.setVisible(true);
     }
 
-    void renderScene() {
+    void renderScene(float curFps) {
+        fps = curFps;
         repaint();
     }
 
     void handleKeyInputs(float dtMod) {
+        if(typing) return;
+
         if (this.keyPressed[KeyEvent.VK_BACK_SLASH] && this.keyPressed[KeyEvent.VK_SHIFT]) {
             this.player.setGodMode(true);
         }else if (this.keyPressed[KeyEvent.VK_SLASH]) {
@@ -55,7 +62,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if (this.keyPressed[KeyEvent.VK_RIGHT] || this.keyPressed[KeyEvent.VK_D]) {
                 this.player.getVelocity().addXY(player.getSpeed() * dtMod, 0);
             }
-            if ((this.keyPressed[KeyEvent.VK_UP] || this.keyPressed[KeyEvent.VK_W]) && player.getGrounded()) {
+            if ((this.keyPressed[KeyEvent.VK_UP] || this.keyPressed[KeyEvent.VK_W] || this.keyPressed[KeyEvent.VK_SPACE]) && player.getGrounded()) {
                 this.player.getVelocity().addXY(0,-17);
             }
         } else {
@@ -103,7 +110,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         buffer.add(new Box(3710, 45, 10, 10, drabWallColor, "#~#"));
         buffer.add(new Box(4100, 20, 40, 10, drabWallColor, "#~#"));
         buffer.add(new Box(2900, 600, 200, 50, drabWallColor, "+300picn0.125~#"));
-        buffer.add(new Box(4141, -101, 3501, 1, drabWallColor, "#~#"));
+        buffer.add(new Box(4141, -101, 3501, 5, drabWallColor, "#~#"));
         buffer.add(new Checkpoint(7400, -111, 100, 10, checkpointColor));
         buffer.add(new Box(4240, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
         buffer.add(new Box(4240+1600, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
@@ -118,6 +125,14 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if(gameObject instanceof Player) {
                 Player playerObject = (Player) gameObject;
                 playerObject.update(dtMod, currentTime);
+                if(!playerObject.getCommunication().equals("") && playerObject.getId() != this.player.getId()) {
+                    String communication = playerObject.getCommunication();
+                    this.messageHistory.add(communication);
+                    /*for(int i = 0; i < communication.length(); i += 29) {
+                        this.messageHistory.add(communication.substring(i, Math.min(i+29, communication.length())));
+                    }*/
+                    playerObject.setCommunication("");
+                }
                 continue;
             }
             gameObject.update(dtMod, currentTime);
@@ -138,7 +153,6 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             }
         }
     }
-
 
     private void handlePlayerCollision(Player player, GameObject toCollide, float dtMod) {
         Vector2D pPos = player.getPos();
@@ -198,6 +212,64 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        Font font = new Font("Courier New", Font.PLAIN, 18);
+
+        renderGameObjects(g);
+        renderMessageSystem(g, font);
+
+        g.setColor(Color.WHITE);
+        g.drawString("FPS" + ((round(fps) > 144) ? ">144" : round(fps)), 10, 20);
+    }
+
+    private void renderMessageSystem(Graphics g, Font font) {
+        g.setFont(font);
+        FontMetrics metrics = g.getFontMetrics(font);
+
+        int windowWidth = 300;
+        int windowHeight = 300;
+
+        if(typing) {
+            windowWidth = 450;
+            windowHeight = getHeight() - 200;
+        }
+
+        int colsAvailable = (int) Math.floor((double) (windowWidth - 20) / metrics.charWidth('_'));
+        int rowsAvailable = (int) Math.floor((double) (windowHeight - 20) / (metrics.charWidth('_') * 2));
+
+        g.setColor(new Color(128, 128, 128, 100));
+        g.fillRect(0, getHeight() - windowHeight, windowWidth, windowHeight);
+
+        g.setColor(Color.BLACK);
+
+        ArrayList<String> lines = new ArrayList<>();
+        for(String message : messageHistory) {
+            int id = Character.getNumericValue(message.charAt(6));
+
+            for(int i = 0; i < message.length(); i += colsAvailable) {
+                lines.add(id + message.substring(i, Math.min(i + colsAvailable, message.length())));
+            }
+        }
+
+        String ticker = (typing && (System.currentTimeMillis() % 1000 < 500) ? "_" : "");
+        lines.add("");
+        lines.add((this.player.getId() + 1) + "Send Message:" + (currentInput.isEmpty() ? ticker : ""));
+        String typingText = currentInput + (currentInput.isEmpty() ? "" : ticker);
+
+        for(int i = 0; i < typingText.length(); i += colsAvailable) {
+            lines.add((this.player.getId() + 1) + typingText.substring(i, Math.min(i + colsAvailable, typingText.length())));
+        }
+
+        for(int i = lines.size() - 1; i >= Math.max(lines.size() - (1 + rowsAvailable), 0); i--) {
+            if(lines.get(i).isEmpty()) continue;
+
+            int id = Character.getNumericValue(lines.get(i).charAt(0));
+            if(id != -1) g.setColor(this.gameObjects[id - 1].getColor());
+
+            g.drawString(lines.get(i).substring(1), 10, getHeight() - 10 - ((lines.size() - i) * 20));
+        }
+    }
+
+    private void renderGameObjects(Graphics g) {
         Vector2D cameraOffset = new Vector2D(
                 (double) getWidth() / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2) - mouseDragOffset.getX(),
                 (double) getHeight() / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2) - mouseDragOffset.getY());
@@ -233,9 +305,37 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         }
     }
 
+
     @Override
     public void keyPressed(KeyEvent e) {
         keyPressed[e.getKeyCode()] = true;
+
+        char c = e.getKeyChar();
+
+        if(typing) {
+           if (c == '\n') {
+                String toAdd = "Player" + (this.player.getId() + 1) + ":" + currentInput;
+                this.messageHistory.add(toAdd);
+                this.player.setCommunication(toAdd);
+                currentInput = "";
+                typing = false;
+            } else if (c == '\b' && !currentInput.isEmpty()) {
+                currentInput = currentInput.substring(0, currentInput.length() - 1);
+            } else if (isCharAllowed(c) && currentInput.length() < 500) {
+                currentInput += c;
+            }
+        }else {
+            if(c == '\n') typing = true;
+        }
+    }
+
+    private boolean isCharAllowed(char toCheck) {
+        if(Character.isLetterOrDigit(toCheck) || Character.isWhitespace(toCheck)) return true;
+        String allowed = "!@#$%^&*()_+-=|}]{[':;'/>.<,~`?";
+        for(char allowedChar : allowed.toCharArray()) {
+            if(toCheck == allowedChar) return true;
+        }
+        return false;
     }
 
     @Override
@@ -248,7 +348,6 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         } else if(e.getWheelRotation() > 0 && (zoomFactor > 0.3 || this.player.getGodMode())){
             zoomFactor *= 1 - change;
         }
-        System.out.println(zoomFactor);
     }
 
     @Override
@@ -278,10 +377,17 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     public void mouseExited(MouseEvent e) {}
     @Override
     public void mouseClicked(MouseEvent e) {
+        if(e.getX() < 200 && e.getY() > getHeight() - 100) {
+            typing = true;
+        }else {
+            typing = false;
+        }
+        /*
         Vector2D cameraOffset = new Vector2D(
                 -((double) getWidth() / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2)) - 7.5,
                 -((double) getHeight() / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2)) - 30);
         System.out.println((e.getX() + cameraOffset.getX()) + ", " + (e.getY() + cameraOffset.getY()));
+         */
     }
     @Override
     public void keyTyped(KeyEvent e) {}

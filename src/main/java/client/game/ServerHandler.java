@@ -34,19 +34,17 @@ class ServerHandler implements Runnable {
                 try {
                     Object fromServerObject = this.in.readObject();
                     if(fromServerObject == null) continue;
-                    if(fromServerObject instanceof Player[]) {
-                        Player[] fromServer = (Player[]) fromServerObject;
-                        for(Player playerUpdate : fromServer) {
-                            if(playerUpdate == null) continue;
-                            updatePlayers(playerUpdate);
+                    if(fromServerObject instanceof Object[]) {
+                        Object[] fromServer = (Object[]) fromServerObject;
+                        for(Object update : fromServer) {
+                            if(update == null) continue;
+                            if(update instanceof Player) updatePlayers((Player) update);
+                            else if(update instanceof Message) interpretMessage((Message) update);
                         }
                     }else if(fromServerObject instanceof Ping) {
                         writeToServer(fromServerObject);
                     }else if(fromServerObject instanceof Message) {
-                        String[] message = ((Message) fromServerObject).getMessage().split(";");
-                        if(message[0].equals("SyncServer")) {
-                            this.serverOffset = System.currentTimeMillis() - Long.parseLong(message[1]);
-                        }
+                        interpretMessage((Message) fromServerObject);
                     }
                 }catch(EOFException ignored) {} catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
@@ -54,6 +52,15 @@ class ServerHandler implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    void interpretMessage(Message toInterpret) {
+        String[] message = toInterpret.getMessage().split(";");
+        if(message[0].equals("SyncServer")) {
+            this.serverOffset = System.currentTimeMillis() - Long.parseLong(message[1]);
+        }else if(message[0].equals("Communication")) {
+
         }
     }
 
@@ -72,6 +79,7 @@ class ServerHandler implements Runnable {
             ghost.setVel(playerUpdate.getVelocity());
             ghost.setGodMode(playerUpdate.getGodMode());
             ghost.setColor(playerUpdate.getColor());
+            ghost.setCommunication(playerUpdate.getCommunication());
         }
     }
 
@@ -88,6 +96,7 @@ class ServerHandler implements Runnable {
             double magnitude = velocityDiff.length();
             if ((magnitude > 0.1f && diff > 50) || diff > 1000 || magnitude > 5 || (this.mainPlayer.getGodMode() && diff > 50)) {
                 writeToServer(this.mainPlayer);
+                this.mainPlayer.setCommunication("");
                 this.lastVelocity = this.mainPlayer.getVelocity().copy();
                 return System.currentTimeMillis();
             }

@@ -4,24 +4,30 @@ import client.model.Vector2D;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Vector;
 
 class ClientHandler implements Runnable {
     private Socket clientSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private Player player;
-    private Player clientUpdate;
+    private Object clientUpdate;
     private long clientPing;
 
-    private final Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
-    private final Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(31.25f, 80)};
+    private ArrayList<Vector2D> dimensions;
+    private ArrayList<Color> playerColorCodes;
 
-    public ClientHandler(Socket clientSocket, int clientId) throws IOException {
+    public ClientHandler(Socket clientSocket, int clientId, ArrayList<Vector2D> dimensions, ArrayList<Color> colorCodes) throws IOException {
         this.clientSocket = clientSocket;
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
-        this.player = new Player(new Vector2D(100, 650), playerColorCodes[clientId], dimensions[clientId], clientId);
-        uploadToClient(new Ping(System.currentTimeMillis()));
+        this.dimensions = dimensions;
+        this.playerColorCodes = colorCodes;
+
+        this.player = new Player(new Vector2D(100, 650), this.playerColorCodes.get(clientId), this.dimensions.get(clientId), clientId);
+        uploadToClient(new Ping());
         Player[] initial = new Player[10];
         initial[clientId] = this.player;
         uploadToClient(initial);
@@ -41,6 +47,9 @@ class ClientHandler implements Runnable {
                         clientPing = System.currentTimeMillis() - ((Ping) fromClient).getTimeSent();
                         uploadToClient(new Message("SyncServer;" + (System.currentTimeMillis() + (clientPing / 2))));
                         System.out.println("Client " + this.player.getId() + " Latency: " + ((clientPing / 2)));
+                    }else if(fromClient instanceof Message) {
+                        String[] message = ((Message) fromClient).getMessage().split(";");
+                        if(message[0].equals("Communication")) this.clientUpdate = fromClient;
                     }
                 }catch(EOFException ignored) {}
             }
@@ -50,14 +59,12 @@ class ClientHandler implements Runnable {
             throw new RuntimeException(e);
         }
     }
-
     void uploadToClient(Object toWrite) throws IOException {
         this.out.reset();
         this.out.writeObject(toWrite);
         this.out.flush();
     }
-
-    public Player getClientUpdate() {
+    public Object getClientUpdate() {
         return this.clientUpdate;
     }
     public void wipeUpdate() {
@@ -66,5 +73,4 @@ class ClientHandler implements Runnable {
     Player getPlayerData() {
         return this.player;
     }
-
 }
