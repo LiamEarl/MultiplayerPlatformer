@@ -10,6 +10,7 @@ public class Player implements GameObject, Serializable {
     private float speed;
     private int id;
     private boolean grounded = false;
+    private boolean god = false;
 
     public Player(Vector2D position, Color color, Vector2D dimensions, int id) {
         this.pos = position;
@@ -19,12 +20,14 @@ public class Player implements GameObject, Serializable {
         this.id = id;
         this.col = color;
         this.spawnPoint = new Vector2D(pos.getX(), pos.getY());
+        this.god = false;
     }
 
     @Override
     public void update(float dtMod, long currentTime) {
+        if(god) return;
         this.pos.setXY(this.pos.getX() + (this.vel.getX() * dtMod), this.pos.getY() + (this.vel.getY() * dtMod));
-        this.vel.scale(1f - (0.02f * dtMod) );
+        this.vel.scale(1f - (0.02f * dtMod));
         this.vel.addXY(0, 0.7f * dtMod);
         this.grounded = false;
     }
@@ -43,6 +46,9 @@ public class Player implements GameObject, Serializable {
     public int getId() {return this.id;}
     public Color getColor() {
         return this.col;
+    }
+    public void setColor(Color newCol) {
+        this.col = newCol;
     }
     public void setVel(Vector2D vel) {
         this.vel.setXY(vel.getX(), vel.getY());
@@ -63,4 +69,6 @@ public class Player implements GameObject, Serializable {
     public void respawn() {this.setPos(this.spawnPoint); this.getVelocity().setXY(0, 0);}
     public Vector2D getSpawnPoint() {return this.spawnPoint; }
     public void setSpawnPoint(Vector2D spawnPoint) {this.spawnPoint = spawnPoint;}
+    public void setGodMode(boolean toSet) {this.god = toSet;}
+    public boolean getGodMode() {return this.god;}
 }

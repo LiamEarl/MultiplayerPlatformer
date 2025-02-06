@@ -24,7 +24,6 @@ class ClientHandler implements Runnable {
 
         Player[] initial = new Player[10];
         initial[clientId] = this.player;
-        uploadToClient(new Ping(System.currentTimeMillis()));
         uploadToClient(initial);
     }
 

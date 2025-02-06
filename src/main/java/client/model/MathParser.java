@@ -1,7 +1,7 @@
 package client.model;
 
 public class MathParser {
-    static public float performCalculation(float value, String expression, long currentTime) {
+    static public double performCalculation(double value, String expression, long currentTime) {
         if(expression.equals("#")) return value;
 
         String[] operations = expression.split(";");

@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Vector;
 
 public class Vector2D implements Serializable {
-    private float x, y;
+    private double x, y;
 
-    public Vector2D(float x, float y) {
+    public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
     }
@@ -27,34 +27,39 @@ public class Vector2D implements Serializable {
         this.x -= other.getX();
         this.y -= other.getY();
     }
-    public float length() {
+    public void subtract(float sx, float sy) {
+        this.x -= sx;
+        this.y -= sy;
+    }
+
+    public double length() {
         return (float) Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     public void normalize() {
-        float len = length();
+        double len = length();
         if (len != 0) {
             this.x /= len;
             this.y /= len;
         }
     }
 
-    public void scale(float scale) {
+    public void scale(double scale) {
         this.x *= scale;
         this.y *= scale;
     }
 
-    public void divide(float toDivide) {
+    public void divide(double toDivide) {
         this.x /= toDivide;
         this.y /= toDivide;
     }
 
-    public void setXY(float x, float y) {
+    public void setXY(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public void addXY(float addX, float addY) {
+    public void addXY(double addX, double addY) {
         this.x += addX;
         this.y += addY;
     }
@@ -64,19 +69,19 @@ public class Vector2D implements Serializable {
         this.y = toSet.getY();
     }
 
-    public float getX() {
+    public double getX() {
         return this.x;
     }
 
-    public void setX(float x) {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public float getY() {
+    public double getY() {
         return this.y;
     }
 
-    public void setY(float y) {
+    public void setY(double y) {
         this.y = y;
     }
 

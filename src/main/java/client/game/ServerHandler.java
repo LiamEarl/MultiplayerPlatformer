@@ -70,6 +70,8 @@ class ServerHandler implements Runnable {
             Player ghost = (Player) gameObjects[id];
             ghost.setPos(playerUpdate.getPos());
             ghost.setVel(playerUpdate.getVelocity());
+            ghost.setGodMode(playerUpdate.getGodMode());
+            ghost.setColor(playerUpdate.getColor());
         }
     }
 
@@ -83,8 +85,8 @@ class ServerHandler implements Runnable {
         if(this.mainPlayer != null) {
             long diff = System.currentTimeMillis() - sendToServerTimer;
             Vector2D velocityDiff = new Vector2D(mainPlayer.getVelocity().getX() - this.lastVelocity.getX(), mainPlayer.getVelocity().getY() - this.lastVelocity.getY());
-            float magnitude = velocityDiff.length();
-            if ((magnitude > 0.1f && diff > 50) || diff > 1000 || magnitude > 5) {
+            double magnitude = velocityDiff.length();
+            if ((magnitude > 0.1f && diff > 50) || diff > 1000 || magnitude > 5 || (this.mainPlayer.getGodMode() && diff > 50)) {
                 writeToServer(this.mainPlayer);
                 this.lastVelocity = this.mainPlayer.getVelocity().copy();
                 return System.currentTimeMillis();
