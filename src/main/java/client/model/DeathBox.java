@@ -27,9 +27,9 @@ public class DeathBox implements GameObject {
         return pos;
     }
     @Override
-    public void update(float dtMod) {
-        this.pos.setX(MathParser.performCalculation(this.originalPos.getX(), this.equations[0]));
-        this.pos.setY(MathParser.performCalculation(this.originalPos.getY(), this.equations[1]));
+    public void update(float dtMod, long currentTime) {
+        this.pos.setX(MathParser.performCalculation(this.originalPos.getX(), this.equations[0], currentTime));
+        this.pos.setY(MathParser.performCalculation(this.originalPos.getY(), this.equations[1], currentTime));
     };
     public void setPos(Vector2D pos) {
         this.pos = pos;

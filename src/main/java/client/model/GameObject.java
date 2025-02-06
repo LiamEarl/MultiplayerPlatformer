@@ -7,5 +7,5 @@ public interface GameObject {
     Vector2D getPos();
     Color getColor();
     Vector2D getVelocity();
-    void update(float dtMod);
+    void update(float dtMod, long currentTime);
 }

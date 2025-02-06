@@ -11,6 +11,7 @@ class ClientHandler implements Runnable {
     private ObjectOutputStream out;
     private Player player;
     private Player clientUpdate;
+    private long clientPing;
 
     private final Color[] playerColorCodes = {new Color(255, 0, 0), new Color(0, 255, 0), new Color(255, 125, 0), new Color(0, 125, 255), new Color(125, 255, 0)};
     private final Vector2D[] dimensions = {new Vector2D(41.5f, 60), new Vector2D(60, 41.5f),  new Vector2D(80, 31.25f), new Vector2D(50, 50), new Vector2D(31.25f, 80)};
@@ -20,8 +21,10 @@ class ClientHandler implements Runnable {
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
         this.player = new Player(new Vector2D(100, 650), playerColorCodes[clientId], dimensions[clientId], clientId);
+
         Player[] initial = new Player[10];
         initial[clientId] = this.player;
+        uploadToClient(new Ping(System.currentTimeMillis()));
         uploadToClient(initial);
     }
 
@@ -33,9 +36,12 @@ class ClientHandler implements Runnable {
                 try {
                     Object fromClient = this.in.readObject();
                     if (fromClient instanceof Player) {
-                        //System.out.println("Receiving Client Info" + ((PlayerData) fromClient).getPos().getX() + " " + ((PlayerData) fromClient).getPos().getY());
                         this.player = (Player) fromClient;
                         clientUpdate = (Player) fromClient;
+                    }else if(fromClient instanceof Ping) {
+                        clientPing = System.currentTimeMillis() - ((Ping) fromClient).getTimeSent();
+                        uploadToClient(new Message("SyncServer;" + (System.currentTimeMillis() + (clientPing / 2))));
+                        System.out.println("Client " + this.player.getId() + " Latency: " + ((clientPing / 2)));
                     }
                 }catch(EOFException ignored) {}
             }
@@ -46,9 +52,9 @@ class ClientHandler implements Runnable {
         }
     }
 
-    void uploadToClient(Player[] entityData) throws IOException {
+    void uploadToClient(Object toWrite) throws IOException {
         this.out.reset();
-        this.out.writeObject(entityData);
+        this.out.writeObject(toWrite);
         this.out.flush();
     }
 

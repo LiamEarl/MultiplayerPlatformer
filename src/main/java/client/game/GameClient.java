@@ -53,7 +53,7 @@ public class GameClient {
                 }
 
                 game.handleKeyInputs(dtMod);
-                game.updateGameObjects(dtMod);
+                game.updateGameObjects(dtMod, serverConnection.getServerTime());
                 game.checkPlayerCollisions(dtMod);
                 game.renderScene();
 

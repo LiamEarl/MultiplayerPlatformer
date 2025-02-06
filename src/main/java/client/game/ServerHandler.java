@@ -2,6 +2,8 @@ package client.game;
 import client.model.GameObject;
 import client.model.Player;
 import client.model.Vector2D;
+import server.Message;
+import server.Ping;
 
 import java.io.*;
 import java.net.Socket;
@@ -12,11 +14,10 @@ class ServerHandler implements Runnable {
     private Socket serverSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-
     private GameObject[] gameObjects;
     private Player mainPlayer;
     private Vector2D lastVelocity;
-
+    private long serverOffset = 0;
 
     ServerHandler(Socket serverSocket, GameObject[] gameObjects) throws IOException {
         this.serverSocket = serverSocket;
@@ -38,6 +39,13 @@ class ServerHandler implements Runnable {
                         for(Player playerUpdate : fromServer) {
                             if(playerUpdate == null) continue;
                             updatePlayers(playerUpdate);
+                        }
+                    }else if(fromServerObject instanceof Ping) {
+                        writeToServer(fromServerObject);
+                    }else if(fromServerObject instanceof Message) {
+                        String[] message = ((Message) fromServerObject).getMessage().split(";");
+                        if(message[0].equals("SyncServer")) {
+                            this.serverOffset = System.currentTimeMillis() - Long.parseLong(message[1]);
                         }
                     }
                 }catch(EOFException ignored) {} catch (ClassNotFoundException e) {
@@ -65,9 +73,9 @@ class ServerHandler implements Runnable {
         }
     }
 
-    void writeToServer() throws IOException {
+    void writeToServer(Object toWrite) throws IOException {
         this.out.reset();
-        this.out.writeObject(this.mainPlayer);
+        this.out.writeObject(toWrite);
         this.out.flush();
     }
 
@@ -77,16 +85,17 @@ class ServerHandler implements Runnable {
             Vector2D velocityDiff = new Vector2D(mainPlayer.getVelocity().getX() - this.lastVelocity.getX(), mainPlayer.getVelocity().getY() - this.lastVelocity.getY());
             float magnitude = velocityDiff.length();
             if ((magnitude > 0.1f && diff > 50) || diff > 1000 || magnitude > 5) {
-            //if ((magnitude > 0.1f && diff > 16)) {
-                writeToServer();
+                writeToServer(this.mainPlayer);
                 this.lastVelocity = this.mainPlayer.getVelocity().copy();
-                System.out.println("writing to server" + System.currentTimeMillis());
                 return System.currentTimeMillis();
             }
         }
         return sendToServerTimer;
     }
 
+    long getServerTime() {
+        return System.currentTimeMillis() + serverOffset;
+    }
 
     int getPlayerId() {
         if(this.mainPlayer == null) return -1;

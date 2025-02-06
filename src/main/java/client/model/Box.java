@@ -38,9 +38,9 @@ public class Box implements GameObject {
         this.pos = pos;
     }
     @Override
-    public void update(float dtMod) {
+    public void update(float dtMod, long currentTime) {
         this.lastPos.setXY(this.pos.getX(), this.pos.getY());
-        this.pos.setX(MathParser.performCalculation(this.originalPos.getX(), this.equations[0]));
-        this.pos.setY(MathParser.performCalculation(this.originalPos.getY(), this.equations[1]));
+        this.pos.setX(MathParser.performCalculation(this.originalPos.getX(), this.equations[0], currentTime));
+        this.pos.setY(MathParser.performCalculation(this.originalPos.getY(), this.equations[1], currentTime));
     };
 }

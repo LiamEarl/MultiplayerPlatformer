@@ -1,7 +1,7 @@
 package client.model;
 
 public class MathParser {
-    static public float performCalculation(float value, String expression) {
+    static public float performCalculation(float value, String expression, long currentTime) {
         if(expression.equals("#")) return value;
 
         String[] operations = expression.split(";");
@@ -16,23 +16,23 @@ public class MathParser {
 
                 if(operation.contains("picn")) {
                     String[] factors = operation.split("picn");
-                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseNormal((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseNormal((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("picf")) {
                     String[] factors = operation.split("picf");
-                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseFast((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (Float.parseFloat(factors[0]) * pieceWiseFast((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("sin")) {
                     String[] factors = operation.split("sin");
-                    value += (float) (Float.parseFloat(factors[0]) * Math.sin((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (Float.parseFloat(factors[0]) * Math.sin((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("cos")) {
                     String[] factors = operation.split("cos");
-                    value += (float) (Float.parseFloat(factors[0]) * Math.cos((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (Float.parseFloat(factors[0]) * Math.cos((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
                 }else if(operation.contains("pls")) {
                     String[] factors = operation.split("pls");
-                    value += (float) (Float.parseFloat(factors[0]) * pulse((Float.parseFloat(factors[1]) * ((double) System.currentTimeMillis() / 1000) * (3.14*2))));
+                    value += (float) (Float.parseFloat(factors[0]) * pulse((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
                 }
                 value += Float.parseFloat(operation.substring(1));

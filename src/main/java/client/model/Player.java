@@ -22,7 +22,7 @@ public class Player implements GameObject, Serializable {
     }
 
     @Override
-    public void update(float dtMod) {
+    public void update(float dtMod, long currentTime) {
         this.pos.setXY(this.pos.getX() + (this.vel.getX() * dtMod), this.pos.getY() + (this.vel.getY() * dtMod));
         this.vel.scale(1f - (0.02f * dtMod) );
         this.vel.addXY(0, 0.7f * dtMod);

@@ -102,17 +102,17 @@ public class Game extends JPanel implements KeyListener {
         }
     }
 
-    void updateGameObjects(float dtMod) {
+    void updateGameObjects(float dtMod, long currentTime) {
         for(GameObject gameObject : this.gameObjects) {
             if(gameObject == null) continue;
 
             if(gameObject instanceof Player) {
                 Player playerObject = (Player) gameObject;
-                playerObject.update(dtMod);
+                playerObject.update(dtMod, currentTime);
                 continue;
             }
 
-            gameObject.update(dtMod);
+            gameObject.update(dtMod, currentTime);
         }
     }
 
