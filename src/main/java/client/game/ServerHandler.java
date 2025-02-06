@@ -96,7 +96,7 @@ class ServerHandler implements Runnable {
     }
 
     long getServerTime() {
-        return System.currentTimeMillis() + serverOffset;
+        return System.currentTimeMillis() - serverOffset;
     }
 
     int getPlayerId() {

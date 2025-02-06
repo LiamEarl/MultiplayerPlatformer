@@ -21,7 +21,7 @@ class ClientHandler implements Runnable {
         this.out = new ObjectOutputStream(clientSocket.getOutputStream());
         this.in = new ObjectInputStream(clientSocket.getInputStream());
         this.player = new Player(new Vector2D(100, 650), playerColorCodes[clientId], dimensions[clientId], clientId);
-
+        uploadToClient(new Ping(System.currentTimeMillis()));
         Player[] initial = new Player[10];
         initial[clientId] = this.player;
         uploadToClient(initial);
