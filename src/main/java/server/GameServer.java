@@ -27,7 +27,7 @@ public class GameServer {
 
             mainLoop:
             while (true) {
-                Thread.sleep(4);
+                Thread.sleep(2);
 
                 for(ClientHandler client : clientHandlers) {
                     Player playerUpdate = client.getClientUpdate();
@@ -40,7 +40,7 @@ public class GameServer {
                     if(updates[i] != null) break;
                     if(i == clientHandlers.size() - 1) continue mainLoop;
                 }
-                System.out.println("recieving update from client" + System.currentTimeMillis());
+                //System.out.println("recieving update from client" + System.currentTimeMillis());
 
                 for(ClientHandler client : clientHandlers) {
                     Player[] modified = Arrays.copyOf(updates, updates.length);

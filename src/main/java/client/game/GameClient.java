@@ -9,7 +9,7 @@ public class GameClient {
     private static final float ASSUMED_UPDATE_TIME = 16;
 
     private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
-        Socket serverSocket = new Socket("the-tower.net", 8888); // Server IP and port
+        Socket serverSocket = new Socket("localhost", 8888); // Server IP and port the-tower.net
         System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
         ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
         Thread serverThread = new Thread(serverHandler);

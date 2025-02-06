@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 
 import static java.lang.Math.abs;
 
@@ -72,32 +73,33 @@ public class Game extends JPanel implements KeyListener {
     }
 
     void createGameObjects() {
+        ArrayList<GameObject> buffer = new ArrayList<>();
+
         Color drabWallColor = new Color(30, 20, 90);
         Color brightWallColor = new Color(255, 213, 0);
         Color checkpointColor = new Color(4, 126, 220);
         Color deathBoxColor = new Color(239, 26, 26);
-        gameObjects[9]  = new Box(-100, 800, 600, 1000, drabWallColor, "#~#");
-        gameObjects[10] = new Box(-1000, -500, 1050, 4000, drabWallColor, "#~#");
-        gameObjects[11] = new Box(700, 700, 310, 4000, drabWallColor, "#~#");
-        gameObjects[12] = new Box(1700, 700, 575, 4000, drabWallColor, "#~#");
-        gameObjects[13] = new Box(1000, 400, 10, 4000, drabWallColor, "#~#");
-        gameObjects[14] = new Box(990, 550, 10, 10, drabWallColor, "#~#");
+        buffer.add(new Box(-100, 800, 600, 1000, drabWallColor, "#~#"));
+        buffer.add(new Box(-1000, -500, 1050, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(700, 700, 310, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(1700, 700, 575, 4000, drabWallColor, "#~#"));
+        buffer.add(new DeathBox(500, 1000, 200, 2000, deathBoxColor, "#~-1500pls0.5"));
+        buffer.add(new Box(1000, 400, 10, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(990, 550, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(3600, 525, 70, 3000, drabWallColor, "#~#"));
+        buffer.add(new Checkpoint(3600f, 515, 70, 10, checkpointColor));
+        buffer.add(new Box(4140, -700, 60, 3000, drabWallColor, "-50pls0.14~#"));
+        buffer.add(new Box(3650, -700, 60, 1000, drabWallColor, "+50pls0.1~#"));
+        buffer.add(new Box(3925, 425, 50, 1000, drabWallColor, "#~#"));
+        buffer.add(new Box(3710, 290, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(3950, 175, 20, 5, drabWallColor, "#~#"));
+        buffer.add(new Box(3710, 30, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(4130, 0, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(2900, 600, 200, 50, drabWallColor, "+300picn0.125~#"));
 
-      //  gameObjects[15] = new Box(2800, 600, 300, 50, drabWallColor, "+400picn0.2~#");
-       // gameObjects[16] = new Box(3250, 524, 5, 5, brightWallColor, "#~#");
-        gameObjects[17] = new Box(3600, 525, 70, 3000, drabWallColor, "#~#");
-        gameObjects[18] = new Checkpoint(3600f, 515, 70, 10, checkpointColor);
-        gameObjects[19] = new Box(4140, -700, 60, 3000, drabWallColor, "-50pls0.14~#");
-        gameObjects[20] = new Box(3650, -700, 60, 1000, drabWallColor, "+50pls0.1~#");
-        gameObjects[21] = new Box(3925, 425, 50, 1000, drabWallColor, "#~#");
-        gameObjects[22] = new Box(3710, 290, 10, 10, drabWallColor, "#~#");
-        gameObjects[23] = new Box(3950, 175, 20, 5, drabWallColor, "#~#");
-        gameObjects[24] = new Box(3710, 30, 10, 10, drabWallColor, "#~#");
-        gameObjects[25] = new Box(4130, 0, 10, 10, drabWallColor, "#~#");
-        //gameObjects[26] = new Box(300, 700, 50, 50, drabWallColor, "-50pls0.125~#");
-        //gameObjects[26] = new Box(4050, -20, 150, 10, drabWallColor, "#~#");
-        //gameObjects[27] = new Box(200, 400, 500, 50, drabWallColor, "+500pic0.125~#");
-        //gameObjects[27] = new DeathBox(200, 700, 50, 50, deathBoxColor);
+        for(int i = 0; i < buffer.size(); i++) {
+            this.gameObjects[i + 10] = buffer.get(i);
+        }
     }
 
     void updateGameObjects(float dtMod) {

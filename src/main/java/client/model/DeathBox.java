@@ -6,10 +6,14 @@ public class DeathBox implements GameObject {
     private Vector2D pos;
     private Vector2D dim;
     private Color col;
+    private Vector2D originalPos;
+    private String[] equations;
 
-    public DeathBox(float x, float y, float width, float height, Color color) {
+    public DeathBox(float x, float y, float width, float height, Color color, String equations) {
         this.pos = new Vector2D(x, y);
         this.dim = new Vector2D(width, height);
+        this.originalPos = new Vector2D(x, y);
+        this.equations = equations.split("~");
         this.col = color;
     }
     @Override
@@ -23,7 +27,10 @@ public class DeathBox implements GameObject {
         return pos;
     }
     @Override
-    public void update(float dtMod) {};
+    public void update(float dtMod) {
+        this.pos.setX(MathParser.performCalculation(this.originalPos.getX(), this.equations[0]));
+        this.pos.setY(MathParser.performCalculation(this.originalPos.getY(), this.equations[1]));
+    };
     public void setPos(Vector2D pos) {
         this.pos = pos;
     }

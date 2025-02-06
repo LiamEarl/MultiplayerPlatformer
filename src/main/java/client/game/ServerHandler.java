@@ -5,11 +5,14 @@ import client.model.Vector2D;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class ServerHandler implements Runnable {
     private Socket serverSocket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
+
     private GameObject[] gameObjects;
     private Player mainPlayer;
     private Vector2D lastVelocity;
@@ -73,8 +76,8 @@ class ServerHandler implements Runnable {
             long diff = System.currentTimeMillis() - sendToServerTimer;
             Vector2D velocityDiff = new Vector2D(mainPlayer.getVelocity().getX() - this.lastVelocity.getX(), mainPlayer.getVelocity().getY() - this.lastVelocity.getY());
             float magnitude = velocityDiff.length();
-            //if ((magnitude > 0.1f && diff > 16) || diff > 1000 || magnitude > 5) {
-            if ((magnitude > 0.1f && diff > 500)) {
+            if ((magnitude > 0.1f && diff > 50) || diff > 1000 || magnitude > 5) {
+            //if ((magnitude > 0.1f && diff > 16)) {
                 writeToServer();
                 this.lastVelocity = this.mainPlayer.getVelocity().copy();
                 System.out.println("writing to server" + System.currentTimeMillis());

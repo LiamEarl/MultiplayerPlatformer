@@ -74,6 +74,6 @@ public class MathParser {
     }
     static public double pulse(double value) {
         double mapped = value % 6.28;
-        return Math.pow(2.7182, -1000 * Math.pow(mapped - 3.14159, 2));
+        return Math.pow(2.7182, -50 * Math.pow(mapped - 3.14159, 2));
     }
 }
