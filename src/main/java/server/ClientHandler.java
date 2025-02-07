@@ -4,9 +4,8 @@ import client.model.Vector2D;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Vector;
 
 class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -15,6 +14,7 @@ class ClientHandler implements Runnable {
     private Player player;
     private Object clientUpdate;
     private long clientPing;
+    private boolean connected = true;
 
     private ArrayList<Vector2D> dimensions;
     private ArrayList<Color> playerColorCodes;
@@ -36,8 +36,7 @@ class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-
-            while (this.clientSocket.isConnected()) {
+            while (connected) {
                 try {
                     Object fromClient = this.in.readObject();
                     if (fromClient instanceof Player) {
@@ -52,6 +51,12 @@ class ClientHandler implements Runnable {
                         if(message[0].equals("Communication")) this.clientUpdate = fromClient;
                     }
                 }catch(EOFException ignored) {}
+                catch(SocketException e) {
+                    System.out.println("Client " + this.player.getId() + " Disconnected");
+                    this.clientSocket.close();
+                    connected = false;
+                }
+
             }
         } catch(IOException e) {
             e.printStackTrace();
@@ -64,13 +69,16 @@ class ClientHandler implements Runnable {
         this.out.writeObject(toWrite);
         this.out.flush();
     }
-    public Object getClientUpdate() {
+    Object getClientUpdate() {
         return this.clientUpdate;
     }
-    public void wipeUpdate() {
+    void wipeUpdate() {
         this.clientUpdate = null;
     }
     Player getPlayerData() {
         return this.player;
+    }
+    boolean getConnected() {
+        return this.connected;
     }
 }

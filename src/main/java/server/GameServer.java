@@ -14,8 +14,7 @@ import java.util.Collections;
 
 public class GameServer {
     public static void main(String[] args) {
-        ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
-
+        ClientHandler[] clientHandlers = new ClientHandler[10];
         Object[] updates = new Player[10];
 
         ArrayList<Color> playerColorCodes = new ArrayList<>(Arrays.asList(
@@ -62,6 +61,13 @@ public class GameServer {
                 Thread.sleep(1);
 
                 for(ClientHandler client : clientHandlers) {
+                    if(client == null) continue;
+                    if(!client.getConnected()) {
+                        System.out.println("Main server: Closed Client " + client.getPlayerData().getId());
+                        clientHandlers[client.getPlayerData().getId()] = null;
+                        continue;
+                    }
+
                     Object clientUpdate = client.getClientUpdate();
                     if(clientUpdate == null) continue;
                     updates[client.getPlayerData().getId()] = clientUpdate;
@@ -70,10 +76,12 @@ public class GameServer {
 
                 for(int i = 0; i < updates.length; i++) {
                     if(updates[i] != null) break;
-                    if(i == clientHandlers.size() - 1) continue mainLoop;
+                    if(i == clientHandlers.length - 1) continue mainLoop;
                 }
 
                 for(ClientHandler client : clientHandlers) {
+                    if(client == null) continue;
+
                     Object[] modified = Arrays.copyOf(updates, updates.length);
                     modified[client.getPlayerData().getId()] = null;
                     client.uploadToClient(modified);
@@ -91,10 +99,10 @@ public class GameServer {
 
 class AcceptIncomingClients implements Runnable {
     private ServerSocket serverSocket;
-    private ArrayList<ClientHandler> handlers;
+    private ClientHandler[] handlers;
     private ArrayList<Vector2D> dimensions;
     private ArrayList<Color> playerColorCodes;
-    AcceptIncomingClients(ServerSocket socket, ArrayList<ClientHandler> handlers, ArrayList<Vector2D> dimensions, ArrayList<Color> playerColorCodes) {
+    AcceptIncomingClients(ServerSocket socket, ClientHandler[] handlers, ArrayList<Vector2D> dimensions, ArrayList<Color> playerColorCodes) {
         this.serverSocket = socket;
         this.handlers = handlers;
         this.dimensions = dimensions;
@@ -107,10 +115,24 @@ class AcceptIncomingClients implements Runnable {
             while(true) {
                 Socket clientSocket = this.serverSocket.accept();
 
-                ClientHandler clientHandler = new ClientHandler(clientSocket, handlers.size(), this.dimensions, this.playerColorCodes);
-                handlers.add(clientHandler);
+                int id = -1;
+                for(int i = 0; i < handlers.length; i++) {
+                    if(this.handlers[i] == null) {
+                        id = i;
+                        break;
+                    }
+                }
 
-                System.out.println("New Client Connected: " + clientSocket.getInetAddress());
+                if(id == -1) {
+                    clientSocket.close();
+                    System.out.println("At client capacity, refused connection.");
+                    continue;
+                }
+
+                ClientHandler clientHandler = new ClientHandler(clientSocket, id, this.dimensions, this.playerColorCodes);
+                this.handlers[id] = clientHandler;
+
+                System.out.println("New Client Connected: Assigning Id " + id + " Address: " + clientSocket.getInetAddress());
 
                 Thread clientThread = new Thread(clientHandler);
                 clientThread.start();

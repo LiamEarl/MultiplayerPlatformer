@@ -2,14 +2,13 @@ package client.game;
 import client.model.*;
 
 import java.io.*;
-import java.net.ConnectException;
 import java.net.Socket;
 
 public class GameClient {
     private static final float ASSUMED_UPDATE_TIME = 16;
 
-    private static ServerHandler handleServerConnection(GameObject[] gameObjects) throws IOException {
-        Socket serverSocket = new Socket("localhost", 8888); // Server IP and port the-tower.net
+    private static ServerHandler handleServerConnection(GameObject[] gameObjects, String ip, int port) throws IOException {
+        Socket serverSocket = new Socket(ip, port); // Server IP and port the-tower.net
         System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
         ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
         Thread serverThread = new Thread(serverHandler);
@@ -19,14 +18,14 @@ public class GameClient {
 
     public static void main(String[] args) {
         try {
-            GameObject[] gameObjects = new GameObject[100];
+            GameObject[] gameObjects = new GameObject[200];
             ServerHandler serverConnection = null;
-            Game game = null;
+            Game game = new Game(gameObjects);
             int currentTick = 0;
 
             long lastUpdate = System.currentTimeMillis();
             long sendToServerTimer = System.currentTimeMillis();
-            float fps = 60;
+            float fps;
             while(true) {
                 long dt = System.currentTimeMillis() - lastUpdate;
                 float dtMod = dt / ASSUMED_UPDATE_TIME;
@@ -35,34 +34,33 @@ public class GameClient {
                 currentTick ++;
 
                 if(serverConnection == null) {
+                    game.renderScene(fps);
+
                     try {
-                        serverConnection = handleServerConnection(gameObjects);
-                    } catch (ConnectException e) {
-                        if(System.currentTimeMillis() - sendToServerTimer > 1000) {
+                        serverConnection = handleServerConnection(gameObjects, game.getIP(), game.getPort());
+                    } catch (Exception e) {
+                        if(currentTick % 60 == 0) {
                             System.out.println("Failed To Connect To The Server. Listening For A Connection.");
-                            sendToServerTimer = System.currentTimeMillis();
                         }
                     }
-                }
 
-                if(game == null) {
-                    if(serverConnection == null) continue;
-                    if (serverConnection.getPlayerId() != -1) {
-                        System.out.println("ATTEMPTING GAME CREATION");
-                        Player mainPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
-                        game = new Game(mainPlayer, gameObjects);
+                    Thread.sleep(16);
+                }else {
+                    if(!game.initializedPlayer()) {
+                        if(serverConnection.getPlayerId() != -1) {
+                            Player mainPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
+                            game.setGameObjects(mainPlayer);
+                        }
+                        Thread.sleep(16);
+                    }else {
+                        game.handleKeyInputs(dtMod);
+                        game.updateGameObjects(dtMod, serverConnection.getServerTime());
+                        game.checkPlayerCollisions(dtMod);
+                        game.renderScene(fps);
+                        sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
+                        Thread.sleep(1);
                     }
-                    continue;
                 }
-
-                game.handleKeyInputs(dtMod);
-                game.updateGameObjects(dtMod, serverConnection.getServerTime());
-                game.checkPlayerCollisions(dtMod);
-                game.renderScene(fps);
-
-                sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
-
-                Thread.sleep(1);
             }
         }catch (Exception e) {
             e.printStackTrace();
