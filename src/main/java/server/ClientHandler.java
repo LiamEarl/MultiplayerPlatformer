@@ -51,17 +51,15 @@ class ClientHandler implements Runnable {
                         if(message[0].equals("Communication")) this.clientUpdate = fromClient;
                     }
                 }catch(EOFException ignored) {}
-                catch(SocketException e) {
+                catch(Exception e) {
                     System.out.println("Client " + this.player.getId() + " Disconnected");
                     this.clientSocket.close();
                     connected = false;
                 }
 
             }
-        } catch(IOException e) {
+        } catch(Exception e) {
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
     void uploadToClient(Object toWrite) throws IOException {

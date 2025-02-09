@@ -39,13 +39,12 @@ public class GameServer {
                 new Vector2D(33.33f, 75f),
                 new Vector2D(83.33f, 30),
                 new Vector2D(27.7f, 90),
-                new Vector2D(100, 25),
+                new Vector2D(90, 27.7),
                 new Vector2D(27.7f, 90)
         ));
 
         Collections.shuffle(playerColorCodes);
         Collections.shuffle(dimensions);
-
         try {
             ServerSocket serverSocket = new ServerSocket();
             serverSocket.bind(new InetSocketAddress(8888));//192.168.12.113

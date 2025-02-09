@@ -30,6 +30,10 @@ public class MathParser {
                     String[] factors = operation.split("cos");
                     value += (float) (Float.parseFloat(factors[0]) * Math.cos((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
+                }else if(operation.contains("fpls")) {
+                    String[] factors = operation.split("fpls");
+                    value += (float) (Float.parseFloat(factors[0]) * frequentPulse((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
+                    continue;
                 }else if(operation.contains("pls")) {
                     String[] factors = operation.split("pls");
                     value += (float) (Float.parseFloat(factors[0]) * pulse((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
@@ -75,5 +79,9 @@ public class MathParser {
     static public double pulse(double value) {
         double mapped = value % 6.28;
         return Math.pow(2.7182, -50 * Math.pow(mapped - 3.14159, 2));
+    }
+    static public double frequentPulse(double value) {
+        double mapped = (value) % (Math.PI / 2);
+        return Math.pow(2.7182, -50 * Math.pow(mapped - (Math.PI / 4), 2));
     }
 }
