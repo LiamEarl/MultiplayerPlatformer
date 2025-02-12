@@ -39,12 +39,13 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         frame.add(this);
         frame.setVisible(true);
         this.gameObjects = gameObjects;
-        loadLevels();;
+        loadLevels();
         this.player = null;
     }
 
     void setGameObjects(Player player) {
         this.player = player;
+
         System.out.println("Initialized" + (this.player == null) + (this.gameObjects == null));
     }
 
@@ -54,7 +55,6 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
 
     void loadLevels() {
         ArrayList<GameObject> buffer = new ArrayList<>();
-        ArrayList<GameObject> dynamicObjects = new ArrayList<>();
 
         Color drabWallColor = new Color(32, 32, 45);
         Color trampolineColor = new Color(255, 213, 0);
@@ -185,11 +185,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
 
 
 
-        for (int i = 0; i < dynamicObjects.size(); i++) {
-            this.gameObjects[i + 10] = dynamicObjects.get(i);
-        }
         for (int i = 0; i < buffer.size(); i++) {
-            this.gameObjects[i + 20] = buffer.get(i);
+            this.gameObjects[i + 10] = buffer.get(i);
         }
     }
 
@@ -246,9 +243,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
                 if (!playerObject.getCommunication().equals("") && playerObject.getId() != this.player.getId()) {
                     String communication = playerObject.getCommunication();
                     this.messageHistory.add(communication);
-                    /*for(int i = 0; i < communication.length(); i += 29) {
-                        this.messageHistory.add(communication.substring(i, Math.min(i+29, communication.length())));
-                    }*/
+
                     playerObject.setCommunication("");
                 }
                 continue;
@@ -262,23 +257,13 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         for (GameObject obj : this.gameObjects) {
 
             if (obj == null) continue;
-            if(!(obj instanceof DynamicBox)) {
-                for (int i = 10; i < 20; i++) {
-                    if (!(this.gameObjects[i] instanceof DynamicBox)) continue;
-                    DynamicBox currentBox = (DynamicBox) this.gameObjects[i];
-                    if (currentBox == null) continue;
-                    if(obj instanceof Player) handleDymamicOnDynamic(currentBox, obj, dtMod);
-                    else handleDynamicOnStatic(currentBox, obj, dtMod);
-                }
-            }
             if (!(obj instanceof Player)) {
                 for (int i = 0; i < 10; i++) {
                     if (!(this.gameObjects[i] instanceof Player)) continue;
                     Player currentPlayer = (Player) this.gameObjects[i];
                     if (currentPlayer == null) continue;
                     if (currentPlayer.getGodMode()) continue;
-                    if(obj instanceof DynamicBox) handleDymamicOnDynamic(currentPlayer, obj, dtMod);
-                    else handleDynamicOnStatic(currentPlayer, obj, dtMod);
+                    handleDynamicOnStatic(currentPlayer, obj, dtMod);
                     if (currentPlayer.getPos().getY() > 3000) currentPlayer.respawn();
                 }
             }
@@ -317,20 +302,12 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if (pPos.getX() < oPos.getX()) {
                 pPos.addXY(-overlapX, 0);
                 if (pPos.getX() + pDim.getX() <= oPos.getX()) {
-                    if(toCollide instanceof DynamicBox) {
-                        dynamic.getVelocity().setXY(0, dynamic.getVelocity().getY());
-                    }else {
-                        dynamic.getVelocity().setXY(oVel.getX(), dynamic.getVelocity().getY());
-                    }
+                    dynamic.getVelocity().setXY(oVel.getX(), dynamic.getVelocity().getY());
                 }
             } else {
                 pPos.addXY(overlapX, 0);
                 if (pPos.getX() >= oPos.getX() + oDim.getX()) {
-                    if(toCollide instanceof DynamicBox) {
-                        dynamic.getVelocity().setXY(0, dynamic.getVelocity().getY());
-                    }else {
-                        dynamic.getVelocity().setXY(oVel.getX(), dynamic.getVelocity().getY());
-                    }
+                    dynamic.getVelocity().setXY(oVel.getX(), dynamic.getVelocity().getY());
                 }
             }
         } else {
@@ -410,12 +387,10 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         if (this.player != null && this.gameObjects != null) {
             renderGameObjects(g);
             renderMessageSystem(g, font);
-            //System.out.println("Yessssriiiiiiiiasdfasdfa");
             g.setColor(Color.WHITE);
             g.drawString("FPS" + ((round(fps) > 144) ? ">144" : round(fps)), 10, 20);
         } else {
             renderHomeScreen(g);
-            ///ystem.out.println("Getting no where" + System.currentTimeMillis());
         }
     }
 
@@ -569,6 +544,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             repaint();
         }
     }
+
     private String handleTyping(char c, String input) {
         String output = input;
         if(c == '\n') return output;
@@ -579,6 +555,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         }
         return output;
     }
+
     private boolean isCharAllowed(char toCheck) {
         if(Character.isLetterOrDigit(toCheck) || Character.isWhitespace(toCheck)) return true;
         String allowed = "!@#$%^&*()_+-=|}]{[':;'/>.<,~`?";
@@ -587,6 +564,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         }
         return false;
     }
+
     public int getPort() {
         return this.port;
     }

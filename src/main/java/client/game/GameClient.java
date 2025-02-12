@@ -26,6 +26,9 @@ public class GameClient {
             long lastUpdate = System.currentTimeMillis();
             long sendToServerTimer = System.currentTimeMillis();
             float fps;
+
+            boolean previouslyConnected = false;
+
             while(true) {
                 long dt = System.currentTimeMillis() - lastUpdate;
                 float dtMod = dt / ASSUMED_UPDATE_TIME;
@@ -34,23 +37,38 @@ public class GameClient {
                 currentTick ++;
 
                 if(serverConnection == null) {
-                    game.renderScene(fps);
 
                     try {
                         serverConnection = handleServerConnection(gameObjects, game.getIP(), game.getPort());
                     } catch (Exception e) {
-                        if(currentTick % 60 == 0) {
+                        if (currentTick % 60 == 0) {
                             System.out.println("Failed To Connect To The Server. Listening For A Connection.");
                         }
                     }
 
+                    if(previouslyConnected) {
+                        game.handleKeyInputs(dtMod);
+                        game.updateGameObjects(dtMod, System.currentTimeMillis());
+                        game.checkPlayerCollisions(dtMod);
+                    }
+
+                    game.renderScene(fps);
+
                     Thread.sleep(16);
                 }else {
+                    previouslyConnected = true;
+
+                    if(!serverConnection.getConnected()) {
+                        serverConnection = null;
+                        continue;
+                    }
+
                     if(!game.initializedPlayer()) {
                         if(serverConnection.getPlayerId() != -1) {
                             Player mainPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
                             game.setGameObjects(mainPlayer);
                         }
+
                         Thread.sleep(16);
                     }else {
                         game.handleKeyInputs(dtMod);
@@ -58,6 +76,7 @@ public class GameClient {
                         game.checkPlayerCollisions(dtMod);
                         game.renderScene(fps);
                         sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
+
                         Thread.sleep(1);
                     }
                 }
