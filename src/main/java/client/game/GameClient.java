@@ -7,10 +7,10 @@ import java.net.Socket;
 public class GameClient {
     private static final float ASSUMED_UPDATE_TIME = 16;
 
-    private static ServerHandler handleServerConnection(GameObject[] gameObjects, String ip, int port) throws IOException {
+    private static ServerHandler handleServerConnection(Game game, String ip, int port) throws IOException {
         Socket serverSocket = new Socket(ip, port); // Server IP and port the-tower.net
         System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
-        ServerHandler serverHandler = new ServerHandler(serverSocket, gameObjects);
+        ServerHandler serverHandler = new ServerHandler(serverSocket, game);
         Thread serverThread = new Thread(serverHandler);
         serverThread.start();
         return serverHandler;
@@ -39,7 +39,7 @@ public class GameClient {
                 if(serverConnection == null) {
 
                     try {
-                        serverConnection = handleServerConnection(gameObjects, game.getIP(), game.getPort());
+                        serverConnection = handleServerConnection(game, game.getIP(), game.getPort());
                     } catch (Exception e) {
                         if (currentTick % 60 == 0) {
                             System.out.println("Failed To Connect To The Server. Listening For A Connection.");
@@ -66,7 +66,7 @@ public class GameClient {
                     if(!game.initializedPlayer()) {
                         if(serverConnection.getPlayerId() != -1) {
                             Player mainPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
-                            game.setGameObjects(mainPlayer);
+                            game.setPlayer(mainPlayer);
                         }
 
                         Thread.sleep(16);

@@ -12,17 +12,17 @@ class ServerHandler implements Runnable {
     private final Socket serverSocket;
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
-    private GameObject[] gameObjects;
+    private Game game;
     private Player mainPlayer;
     private Vector2D lastVelocity;
     private long serverOffset = 0;
     private boolean connected;
 
-    ServerHandler(Socket serverSocket, GameObject[] gameObjects) throws IOException {
+    ServerHandler(Socket serverSocket, Game game) throws IOException {
         this.serverSocket = serverSocket;
         this.out = new ObjectOutputStream(serverSocket.getOutputStream());
         this.in = new ObjectInputStream(serverSocket.getInputStream());
-        this.gameObjects = gameObjects;
+        this.game = game;
         this.connected = true;
         this.lastVelocity = new Vector2D(0, 0);
     }
@@ -64,7 +64,9 @@ class ServerHandler implements Runnable {
         String[] message = toInterpret.getMessage().split(";");
         if(message[0].equals("SyncServer")) {
             this.serverOffset = System.currentTimeMillis() - Long.parseLong(message[1]);
-        }else if(message[0].equals("Communication")) {}
+        }else if(message[0].equals("CurrentLevel")) {
+            game.setLevel(Integer.parseInt(message[1]));
+        }if(message[0].equals("Communication")) {}
     }
 
     void updatePlayers(Player playerUpdate) {
@@ -72,12 +74,12 @@ class ServerHandler implements Runnable {
 
         int id = playerUpdate.getId();
 
-        if (gameObjects[id] == null) {
-            this.gameObjects[id] = playerUpdate;
+        if (this.game.getGameObjects()[id] == null) {
+            this.game.getGameObjects()[id] = playerUpdate;
             if(this.mainPlayer == null) this.mainPlayer = playerUpdate;
             System.out.println("INITIALIZED PLAYER " + playerUpdate.getId());
         } else {
-            Player ghost = (Player) gameObjects[id];
+            Player ghost = (Player) this.game.getGameObjects()[id];
             ghost.setPos(playerUpdate.getPos());
             ghost.setVel(playerUpdate.getVelocity());
             ghost.setGodMode(playerUpdate.getGodMode());

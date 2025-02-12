@@ -34,6 +34,13 @@ public class Player implements GameObject, Serializable {
         this.grounded = false;
     }
     @Override
+    public boolean equals(Object p) {
+        if(!(p instanceof Player)) return false;
+        Player player = (Player) p;
+        if(player.getId() == this.getId()) return true;
+        return false;
+    }
+    @Override
     public Vector2D getVelocity() {
         return vel;
     }

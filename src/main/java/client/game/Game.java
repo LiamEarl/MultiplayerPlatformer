@@ -5,7 +5,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import java.util.Random;
 
 import static java.lang.Math.round;
 
@@ -25,7 +24,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     private int port;
     private String ip;
 
-    private ArrayList<ArrayList<GameObject>> levels = new ArrayList<>();
+    private ArrayList<Level> levels;
+    private int level;
 
     Game(GameObject[] gameObjects) {
         JFrame frame = new JFrame("Liam's Platformer Game");
@@ -39,59 +39,31 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         frame.add(this);
         frame.setVisible(true);
         this.gameObjects = gameObjects;
-        loadLevels();
+        this.levels = new ArrayList<>();
+        this.level = 0;
         this.player = null;
+        createLevels();
+        loadCurrentLevel();
     }
 
-    void setGameObjects(Player player) {
+    void setPlayer(Player player) {
         this.player = player;
-
-        System.out.println("Initialized" + (this.player == null) + (this.gameObjects == null));
+        this.player.setSpawnPoint(this.levels.getFirst().getSpawnPoint());
+        this.player.respawn();
     }
 
     boolean initializedPlayer() {
         return !(this.player == null);
     }
 
-    void loadLevels() {
+    void createLevels() {
         ArrayList<GameObject> buffer = new ArrayList<>();
 
         Color drabWallColor = new Color(32, 32, 45);
         Color trampolineColor = new Color(255, 213, 0);
         Color checkpointColor = new Color(4, 126, 220);
         Color deathBoxColor = new Color(239, 26, 26);
-        Color dynamicBoxColor = new Color(26, 140, 41);
-        /*
-        //Level 1
-        buffer.add(new Box(-100, 800, 600, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(-1000, -500, 1050, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(700, 700, 310, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(1700, 700, 575, 4000, drabWallColor, "#~#"));
-        buffer.add(new DeathBox(495, 1500, 210, 3000, deathBoxColor, "#~-1000picf0.5"));
-        buffer.add(new Box(1000, 400, 50, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(990, 550, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(3600, 525, 70, 4000, drabWallColor, "#~#"));
-        buffer.add(new Checkpoint(3600f, 515, 70, 10, checkpointColor));
-        buffer.add(new DeathBox(4145, -99, 3500, 10000, deathBoxColor, "#~#"));
-        buffer.add(new Box(4140, -100, 100, 6000, drabWallColor, "-100pls1.25~#"));
-        buffer.add(new Box(3610, -700, 100, 1000, drabWallColor, "+100pls0.3~#"));
-        buffer.add(new Box(3610, -800, 4000, 200, drabWallColor, "#~#"));
-        buffer.add(new DeathBox(3670, 900, 4140 - 3670, 4000, deathBoxColor, "#~#"));
-        buffer.add(new Box(3925, 435, 50, 50, drabWallColor, "#~#"));
-        buffer.add(new Box(3710, 290, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(3950, 190, 20, 5, drabWallColor, "#~#"));
-        buffer.add(new Box(3710, 45, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(4100, 20, 40, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(2900, 600, 200, 50, drabWallColor, "+300picn0.125~#"));
-        buffer.add(new Box(4141, -101, 3501, 5, drabWallColor, "#~#"));
-        buffer.add(new Checkpoint(7400, -111, 100, 10, checkpointColor));
-        buffer.add(new Box(4240, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
-        buffer.add(new Box(4240 + 1600, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
-        buffer.add(new Trampoline(200, 700, 100, 50, trampolineColor));
-        buffer.add(new Trampoline(100, 150, 100, 50, trampolineColor));
-        buffer.add(new Box(1200, 150, 100, 50, drabWallColor, "#~#"));
-        */
-
+        Color finishLineColor = new Color(26, 140, 41);
 
         buffer.add(new Box(0, 1000, 2000, 1000, drabWallColor,"#~#"));
         buffer.add(new Box(-1000, -4000, 1000, 6000, drabWallColor,"#~#"));
@@ -169,7 +141,6 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         buffer.add(new Box(1600, -2050, 50, 50, drabWallColor,"#~#"));
         buffer.add(new Box(1300, -2050, 25, 25, drabWallColor,"#~#"));
         buffer.add(new Box(1000, -2050, 14, 15, drabWallColor,"#~#"));
-
         buffer.add(new Box(700, -2050, 10, 10, drabWallColor,"#~#"));
         buffer.add(new Box(400, -2050, 7, 7, drabWallColor,"#~#"));
         buffer.add(new Box(100, -2050, 5, 5, drabWallColor,"#~#"));
@@ -178,15 +149,59 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         buffer.add(new Box(450, -2450, 150, 25, drabWallColor,"#~#"));
         buffer.add(new Box(1390, -2450, 700, 50, drabWallColor,"#~#"));
         buffer.add(new Trampoline(1800, -2475, 200, 25, trampolineColor));
-        buffer.add(new Box(1450, -2750, 350, 50, drabWallColor,"#~#"));
+        buffer.add(new FinishLine(1450, -2750, 350, 50, finishLineColor));
 
-        levels.add(buffer);
+        Level level1 = new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(950, 800));
+        levels.add(level1);
+        buffer.clear();
 
+        //Level 1
+        buffer.add(new Box(-100, 800, 600, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(-1000, -500, 1050, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(700, 700, 310, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(1700, 700, 575, 4000, drabWallColor, "#~#"));
+        buffer.add(new DeathBox(495, 1500, 210, 3000, deathBoxColor, "#~-1000picf0.5"));
+        buffer.add(new Box(1000, 400, 50, 4000, drabWallColor, "#~#"));
+        buffer.add(new Box(990, 550, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(3600, 525, 70, 4000, drabWallColor, "#~#"));
+        buffer.add(new Checkpoint(3600f, 515, 70, 10, checkpointColor));
+        buffer.add(new DeathBox(4145, -99, 3500, 10000, deathBoxColor, "#~#"));
+        buffer.add(new Box(4140, -100, 100, 6000, drabWallColor, "-100pls1.25~#"));
+        buffer.add(new Box(3610, -700, 100, 1000, drabWallColor, "+100pls0.3~#"));
+        buffer.add(new Box(3610, -800, 4000, 200, drabWallColor, "#~#"));
+        buffer.add(new DeathBox(3670, 900, 4140 - 3670, 4000, deathBoxColor, "#~#"));
+        buffer.add(new Box(3925, 435, 50, 50, drabWallColor, "#~#"));
+        buffer.add(new Box(3710, 290, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(3950, 190, 20, 5, drabWallColor, "#~#"));
+        buffer.add(new Box(3710, 45, 10, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(4100, 20, 40, 10, drabWallColor, "#~#"));
+        buffer.add(new Box(2900, 600, 200, 50, drabWallColor, "+300picn0.125~#"));
+        buffer.add(new Box(4141, -101, 3501, 5, drabWallColor, "#~#"));
+        buffer.add(new Checkpoint(7400, -111, 100, 10, checkpointColor));
+        buffer.add(new Box(4240, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
+        buffer.add(new Box(4240 + 1600, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
+        buffer.add(new Trampoline(200, 700, 100, 50, trampolineColor));
+        buffer.add(new Trampoline(100, 150, 100, 50, trampolineColor));
+        buffer.add(new Box(1200, 150, 100, 50, drabWallColor, "#~#"));
+        Level level2 = new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(100, 700));
+        levels.add(level2);
+        buffer.clear();
+    }
 
+    private void loadCurrentLevel() {
 
-
-        for (int i = 0; i < buffer.size(); i++) {
-            this.gameObjects[i + 10] = buffer.get(i);
+        ArrayList<GameObject> objects = this.levels.get(this.level).getObjects();
+        if(objects.isEmpty()) return;
+        for(int i = 10; i < this.gameObjects.length; i++) {
+            this.gameObjects[i] = null;
+        }
+        for (int i = 0; i < objects.size(); i++) {
+            this.gameObjects[i + 10] = objects.get(i);
+        }
+        if(this.player != null) {
+            this.player.setSpawnPoint(this.levels.get(this.level).getSpawnPoint());
+            this.player.respawn();
+            this.player.setGodMode(false);
         }
     }
 
@@ -327,56 +342,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
 
         if (toCollide instanceof Checkpoint && dynamic instanceof Player)
             ((Player) dynamic).setSpawnPoint(new Vector2D(oPos.getX() + (oDim.getX() / 2) - (pDim.getX() / 2), oPos.getY() - pDim.getY()));
-        if (toCollide instanceof FinishLine && dynamic instanceof Player) nextLevel();
-    }
-
-    private void handleDymamicOnDynamic(GameObject dynamic, GameObject toCollide, float dtMod) {
-        Vector2D pPos = dynamic.getPos();
-        Vector2D pDim = dynamic.getDim();
-        Vector2D pVel = dynamic.getVelocity();
-        Vector2D oPos = toCollide.getPos();
-        Vector2D oDim = toCollide.getDim();
-        Vector2D oVel = toCollide.getVelocity();
-
-        boolean isBoundingBoxColliding = pPos.getX() + pVel.getX() < oPos.getX() + oDim.getX() + oVel.getX() &&
-                pPos.getX() + pDim.getX() + pVel.getX() > oPos.getX() + oVel.getX() &&
-                pPos.getY() + pVel.getY() < oPos.getY() + oDim.getY() + oVel.getY() &&
-                pPos.getY() + pDim.getY() + pVel.getY() > oPos.getY() + oVel.getY();
-
-        if (!isBoundingBoxColliding) return;
-
-        double overlapX = Math.min(pPos.getX() + pDim.getX(), oPos.getX() + oDim.getX()) - Math.max(pPos.getX(), oPos.getX());
-        double overlapY = Math.min(pPos.getY() + pDim.getY(), oPos.getY() + oDim.getY()) - Math.max(pPos.getY(), oPos.getY());
-
-        if (overlapX < overlapY) {
-            if (pPos.getX() < oPos.getX()) {
-                pPos.addXY(-overlapX/2, 0);
-                oPos.addXY(overlapX/2, 0);
-                pVel.setX(oVel.getX());
-                oVel.setX(pVel.getX() );
-            } else {
-                pPos.addXY(overlapX/2, 0);
-                oPos.addXY(-overlapX/2, 0);
-                pVel.setX(oVel.getX());
-                oVel.setX(pVel.getX());
-            }
-        } else {
-            if (pPos.getY() < oPos.getY()) {
-                pPos.addXY(0, -overlapY/2);
-                oPos.addXY(0, overlapY/2);
-                if(dynamic instanceof Player) ((Player) dynamic).setGrounded(true);
-                dynamic.getVelocity().setXY(dynamic.getVelocity().getX() * (1 - 0.03f * dtMod), 0);
-            } else {
-                pPos.addXY(0, overlapY/2);
-                oPos.addXY(0, -overlapY/2);
-                pVel.setY(0);
-            }
-        }
-    }
-
-    private void nextLevel() {
-
-
+        if (toCollide instanceof FinishLine && dynamic.equals(this.player)) this.player.setGodMode(true);
     }
 
     @Override
@@ -385,7 +351,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
 
         Font font = new Font("Courier New", Font.PLAIN, 18);
         if (this.player != null && this.gameObjects != null) {
-            renderGameObjects(g);
+            renderGameObjects(g, font);
             renderMessageSystem(g, font);
             g.setColor(Color.WHITE);
             g.drawString("FPS" + ((round(fps) > 144) ? ">144" : round(fps)), 10, 20);
@@ -437,8 +403,11 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         int colsAvailable = (int) Math.floor((double) (windowWidth - 20) / metrics.charWidth('_'));
         int rowsAvailable = (int) Math.floor((double) (windowHeight - 20) / (metrics.charWidth('_') * 2));
 
-        g.setColor(new Color(128, 128, 128, 100));
+        g.setColor(new Color(0, 0, 0, 100));
         g.fillRect(0, getHeight() - windowHeight, windowWidth, windowHeight);
+        g.setColor(new Color(255, 255, 255, 100));
+        g.fillRect(0, getHeight() - windowHeight - 5, windowWidth, 5);
+        g.fillRect(windowWidth, getHeight() - windowHeight - 5, 5, windowHeight + 10);
 
         g.setColor(Color.BLACK);
 
@@ -464,17 +433,22 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if(lines.get(i).isEmpty()) continue;
 
             int id = Character.getNumericValue(lines.get(i).charAt(0));
-            if(id != -1 && this.gameObjects[id - 1] != null) {
-                g.setColor(this.gameObjects[id - 1].getColor());
-            }else {
-                g.setColor(Color.BLACK);
-            }
+
+            g.setColor(Color.BLACK);
+
+            try {
+                if (id != -1 && this.gameObjects[id - 1] != null) {
+                    g.setColor(this.gameObjects[id - 1].getColor());
+                }
+            } catch(Exception e) {}
 
             g.drawString(lines.get(i).substring(1), 10, getHeight() - 10 - ((lines.size() - i) * 20));
         }
     }
 
-    private void renderGameObjects(Graphics g) {
+    private void renderGameObjects(Graphics g, Font font) {
+        g.setFont(font);
+
         Vector2D cameraOffset = new Vector2D(
                 (double) getWidth() / 2 - this.player.getPos().getX() - (this.player.getDim().getX() / 2) - mouseDragOffset.getX(),
                 (double) getHeight() / 2 - this.player.getPos().getY() - (this.player.getDim().getY() / 2) - mouseDragOffset.getY());
@@ -506,8 +480,22 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
 
             // Draw the rectangle
             g.setColor(r.getColor());
+
+            if(r instanceof Player) {
+                if(((Player) r).getGodMode()) {
+                    Color oldColor = r.getColor();
+                    g.setColor(new Color(oldColor.getRed(), oldColor.getGreen(), oldColor.getBlue(), 100));
+                }
+            }
+
             g.fillRect((int) topLeft.getX(), (int) topLeft.getY(), (int) (botRight.getX() - topLeft.getX()), (int) (botRight.getY() - topLeft.getY()));
         }
+
+        if(this.player.getGodMode()) {
+            g.setColor(Color.WHITE);
+            g.drawString("SPECTATE MODE" , (getWidth() / 2) - 50, 30);
+        }
+
     }
 
     @Override
@@ -571,6 +559,19 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     public String getIP() {
         return this.ip;
     }
+    public GameObject[] getGameObjects() {
+        return this.gameObjects;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+        loadCurrentLevel();
+    }
+
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
        // double change = Math.pow(2, -0.5 * Math.pow(zoomFactor - 2.5, 2)) / 5;
