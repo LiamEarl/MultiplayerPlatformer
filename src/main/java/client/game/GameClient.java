@@ -20,7 +20,7 @@ public class GameClient {
         try {
             GameObject[] gameObjects = new GameObject[200];
             ServerHandler serverConnection = null;
-            Game game = new Game(gameObjects);
+            Game game = new Game(gameObjects, serverConnection);
             int currentTick = 0;
 
             long lastUpdate = System.currentTimeMillis();
@@ -40,6 +40,7 @@ public class GameClient {
 
                     try {
                         serverConnection = handleServerConnection(game, game.getIP(), game.getPort());
+                        game.setServerConnection(serverConnection);
                     } catch (Exception e) {
                         if (currentTick % 60 == 0) {
                             System.out.println("Failed To Connect To The Server. Listening For A Connection.");

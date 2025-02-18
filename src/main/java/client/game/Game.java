@@ -14,6 +14,7 @@ import java.util.Vector;
 import static java.lang.Math.round;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import server.Message;
 
 public class Game extends JPanel implements KeyListener, MouseWheelListener, MouseListener, MouseMotionListener {
 
@@ -29,10 +30,14 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     private int port;
     private String ip;
 
+    private ServerHandler serverConnection;
     private final ArrayList<Level> levels;
     private int level;
 
-    Game(GameObject[] gameObjects) throws IOException {
+    Message[] recentMessages = new Message[10];
+
+    Game(GameObject[] gameObjects, ServerHandler serverConnection) throws IOException {
+        this.serverConnection = serverConnection;
         JFrame frame = new JFrame("Liam's Platformer Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         int WINDOW_WIDTH = 1300;
@@ -195,7 +200,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
                 if (!playerObject.getCommunication().equals("") && playerObject.getId() != this.player.getId()) {
                     String communication = playerObject.getCommunication();
                     this.messageHistory.add(communication);
-
+                    if(this.serverConnection != null)
+                        this.recentMessages[playerObject.getId()] = new Message(communication + ";" + this.serverConnection.getServerTime());
                     playerObject.setCommunication("");
                 }
                 continue;
@@ -384,6 +390,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     }
 
     private void renderGameObjects(Graphics g, Font font) {
+        Graphics2D g2d = (Graphics2D) g;
+        FontMetrics metrics = g.getFontMetrics(font);
         g.setFont(font);
 
         Vector2D cameraOffset = new Vector2D(
@@ -419,6 +427,22 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             g.setColor(r.getColor());
 
             if(r instanceof Player) {
+                int id = ((Player) r).getId();
+                if(recentMessages[id] != null && this.serverConnection != null) {
+                    String[] mData = recentMessages[id].getMessage().split(";");
+
+                    double xTransform = topLeft.getX() - (metrics.charWidth('_') * zoomFactor * (((double) mData[0].length() / 2) - 1));
+                    double yTransform = topLeft.getY() - (metrics.charWidth('_') * zoomFactor);
+                    g2d.setColor(r.getColor());
+                    g2d.translate(xTransform, yTransform);
+                    g2d.scale(zoomFactor, zoomFactor);
+                    g2d.drawString(mData[0], 0, 0);
+                    g2d.scale(1 / zoomFactor, 1 / zoomFactor);
+                    g2d.translate(-xTransform, -yTransform);
+
+                    if(this.serverConnection.getServerTime() - Long.parseLong(mData[1]) > 7000) recentMessages[id] = null;
+                }
+
                 if(((Player) r).getGodMode()) {
                     Color oldColor = r.getColor();
                     g.setColor(new Color(oldColor.getRed(), oldColor.getGreen(), oldColor.getBlue(), 100));
@@ -432,7 +456,6 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             g.setColor(Color.WHITE);
             g.drawString("SPECTATE MODE" , (getWidth() / 2) - 50, 30);
         }
-
     }
 
     @Override
@@ -446,6 +469,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if(c == '\n' && !this.messagingInput.isEmpty()) {
                 String toAdd = "Player" + (this.player.getId() + 1) + ":" + messagingInput;
                 this.messageHistory.add(toAdd);
+                if(this.serverConnection != null)
+                    this.recentMessages[this.player.getId()] = new Message(toAdd + ";" + this.serverConnection.getServerTime());
                 this.player.setCommunication(toAdd);
                 messagingInput = "";
             }
@@ -499,7 +524,9 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     public GameObject[] getGameObjects() {
         return this.gameObjects;
     }
-
+    public void setServerConnection(ServerHandler toSet) {
+        this.serverConnection = toSet;
+    }
     public int getLevel() {
         return level;
     }
