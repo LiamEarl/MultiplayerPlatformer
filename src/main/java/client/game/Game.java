@@ -4,32 +4,38 @@ import client.model.Box;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.lang.Math.round;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class Game extends JPanel implements KeyListener, MouseWheelListener, MouseListener, MouseMotionListener {
 
     private Player player;
-    private boolean[] keyPressed = new boolean[256];
-    private GameObject[] gameObjects;
-    private final int WINDOW_WIDTH = 1300;
-    private final int WINDOW_HEIGHT = 800;
+    private final boolean[] keyPressed = new boolean[256];
+    private final GameObject[] gameObjects;
     private double zoomFactor = 1f;
-    private Vector2D mouseDragOffset = new Vector2D(0, 0);
+    private final Vector2D mouseDragOffset = new Vector2D(0, 0);
     private float fps = 60;
     private boolean typingMessage = false, typingPort = false, typingIP = false;
     private String messagingInput = "", ipInput = "", portInput = "";
-    private ArrayList<String> messageHistory = new ArrayList<>();
+    private final ArrayList<String> messageHistory = new ArrayList<>();
     private int port;
     private String ip;
 
-    private ArrayList<Level> levels;
+    private final ArrayList<Level> levels;
     private int level;
 
-    Game(GameObject[] gameObjects) {
+    Game(GameObject[] gameObjects) throws IOException {
         JFrame frame = new JFrame("Liam's Platformer Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        int WINDOW_WIDTH = 1300;
+        int WINDOW_HEIGHT = 800;
         frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         frame.setResizable(true);
         frame.addKeyListener(this);
@@ -42,7 +48,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         this.levels = new ArrayList<>();
         this.level = 0;
         this.player = null;
-        createLevels();
+        createLevels("src/main/resources/levels.json");
         loadCurrentLevel();
     }
 
@@ -56,136 +62,60 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         return !(this.player == null);
     }
 
-    void createLevels() {
+    void createLevels(String jsonPath) throws IOException {
+
+        String jsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
+        JSONArray jsonArray = new JSONArray(jsonString);
+
+        HashMap<String, Color> colors = new HashMap<>();
+        colors.put("checkpointColor", new Color(4, 126, 220));
+        colors.put("deathBoxColor", new Color(239, 26, 26));
+        colors.put("finishLineColor", new Color(26, 140, 41));
+        colors.put("drabWallColor", new Color(32, 32, 45));
+        colors.put("trampolineColor", new Color(255, 213, 0));
+
         ArrayList<GameObject> buffer = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONArray rowArray = jsonArray.getJSONArray(i);
 
-        Color drabWallColor = new Color(32, 32, 45);
-        Color trampolineColor = new Color(255, 213, 0);
-        Color checkpointColor = new Color(4, 126, 220);
-        Color deathBoxColor = new Color(239, 26, 26);
-        Color finishLineColor = new Color(26, 140, 41);
+            // Iterate through each object in the row
+            for (int j = 0; j < rowArray.length(); j++) {
+                JSONObject jsonObject = rowArray.getJSONObject(j);
 
-        buffer.add(new Box(0, 1000, 2000, 1000, drabWallColor,"#~#"));
-        buffer.add(new Box(-1000, -4000, 1000, 6000, drabWallColor,"#~#"));
-        buffer.add(new Box(2000, -4000, 1000, 6000, drabWallColor,"#~#"));
-        buffer.add(new Checkpoint(800, 975, 400, 25, checkpointColor));
-        buffer.add(new Box(1800, 900, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1950, 800, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1700, 725, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1300, 725, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(700, 725, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(0, 650, 10, 100, drabWallColor,"#~-850fpls0.05"));
-        buffer.add(new Box(394, 652, 11, 13, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(0, -300, 100, 100, deathBoxColor,"#~#"));
-        buffer.add(new Box(100, -200, 100, 300, drabWallColor,"#~#"));
-        buffer.add(new Box(100, 225, 100, 125, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(100, 350, 100, 25, deathBoxColor,"#~#"));
-        buffer.add(new Box(200, 300, 400, 50, drabWallColor,"#~#"));
-        buffer.add(new Box(600, 400, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(700, 300, 400, 50, drabWallColor,"#~#"));
-        buffer.add(new Box(1100, 400, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1200, 300, 400, 50, drabWallColor,"#~#"));
-        buffer.add(new Box(1600, 400, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1700, 300, 300, 50, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(1050, 0, 200, 300, deathBoxColor,"+650picn0.235~#"));
-        buffer.add(new DeathBox(1050, 0, 200, 300, deathBoxColor,"-650picn0.235~#"));
-        buffer.add(new Trampoline(1900, 275, 100, 25, trampolineColor));
-        buffer.add(new Box(1800, -225, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Checkpoint(1800, -237, 100, 12, checkpointColor));
-        buffer.add(new Box(1100, -225, 112, 26, drabWallColor,"#~#"));
-        buffer.add(new Box(0, -305, 1101, 6, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(0, -300, 1075, 100, deathBoxColor,"#~#"));
-        buffer.add(new Box(100, -700, 975, 290, drabWallColor,"#~+100pls0.575"));
-        buffer.add(new Box(94, -449, 6, 7, drabWallColor,"#~#"));
-        buffer.add(new Box(0, -587, 7, 8, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(0, -1025, 1900, 25, deathBoxColor,"#~#"));
-        buffer.add(new DeathBox(100, -725, 1900, 25, deathBoxColor,"#~#"));
-        //buffer.add(new Box(93, -700, 10, 11, drabWallColor,"#~#"));
-        buffer.add(new Checkpoint(94, -735, 25, 50, checkpointColor));
-
-
-        int[][] combinations = {
-                {2, 2, 3, 1, 2, 1, 2, 1, 2, 3, 2, 2, 1, 3, 2},
-                {2, 1, 3, 2, 1, 2, 2, 2, 3, 1, 2, 3, 1, 2, 1},
-                {2, 1, 2, 3, 1, 2, 2, 3, 2, 1, 3, 2, 1, 3, 2},
-        };
-        int curCombination = (int) (System.currentTimeMillis() % combinations.length);
-        for(int i = 1; i < 16; i++) {
-            if(combinations[curCombination][i-1] == 1)
-                buffer.add(new DeathBox((i * 100) + 50 - (35 / 2), -735 - (i % 3) * 7, 35, 10, drabWallColor, "#~#"));
-            else if(combinations[curCombination][i-1] == 2)
-                buffer.add(new Box((i * 100) + 50 - (35 / 2), -735 - (i % 3) * 7, 35, 10, drabWallColor, "#~#"));
-            else if(combinations[curCombination][i-1] == 3)
-                buffer.add(new Trampoline((i * 100) + 50 - (35 / 2), -735 - (i % 3) * 7, 35, 10, drabWallColor));
+                // Get the type of object
+                String type = jsonObject.getString("type");
+                int boxX = jsonObject.getInt("x");
+                int boxY = jsonObject.getInt("y");
+                int boxW = jsonObject.getInt("w");
+                int boxH = jsonObject.getInt("h");
+                String boxEq = jsonObject.has("equation") ? jsonObject.getString("equation") : "#~#";
+                Color boxCol = colors.get(jsonObject.getString("color"));
+                System.out.println(boxEq);
+                // Depending on the type, create the appropriate object and add it to the buffer
+                switch (type) {
+                    case "Box":
+                        buffer.add(new Box(boxX, boxY, boxW, boxH, boxCol, boxEq));
+                        break;
+                    case "Trampoline":
+                        buffer.add(new Trampoline(boxX, boxY, boxW, boxH, boxCol));
+                        break;
+                    case "Checkpoint":
+                        buffer.add(new Checkpoint(boxX, boxY, boxW, boxH, boxCol));
+                        break;
+                    case "DeathBox":
+                        buffer.add(new DeathBox(boxX, boxY, boxW, boxH, boxCol, boxEq));
+                        break;
+                    case "FinishLine":
+                        buffer.add(new FinishLine(boxX, boxY, boxW, boxH, boxCol));
+                        break;
+                    // Add other cases as needed (for more object types)
+                    default:
+                        System.out.println("Unknown object type: " + type);
+                }
+            }
+            levels.add(new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(900, 750)));
+            buffer.clear();
         }
-
-        buffer.add(new Checkpoint(1800, -750, 100, 25, checkpointColor));
-        buffer.add(new Trampoline(1900, -750, 100, 25, trampolineColor));
-        buffer.add(new Box(0, -4000, 2000, 1000, drabWallColor,"#~#"));
-        buffer.add(new Trampoline(1800, -1050, 100, 25, trampolineColor));
-        buffer.add(new Box(0, -1050, 1800, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1775, -1100, 25, 75, drabWallColor,"#~#"));
-        buffer.add(new Box(900, -1725, 1100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(875, -1725, 25, 575, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(900, -1175, 200, 25, deathBoxColor,"#~#"));
-        buffer.add(new DeathBox(1000, -1175, 175, 25, deathBoxColor,"+100picn0.5~#"));
-        buffer.add(new DeathBox(1275, -1175, 525, 25, deathBoxColor,"#~#"));
-        buffer.add(new DeathBox(1775, -1175, 25, 150, deathBoxColor,"#~#"));
-        buffer.add(new Box(700, -1750, 1300, 50, drabWallColor,"#~#"));
-        buffer.add(new DeathBox(360, -1395, 180, 90, deathBoxColor,"+200cos0.3~+230sin0.3;-200pls0.175"));
-        buffer.add(new Box(350, -1400, 200, 100, drabWallColor,"+200cos0.3~+230sin0.3"));
-        buffer.add(new DeathBox(0, -1950, 1800, 50, deathBoxColor,"#~#"));
-        buffer.add(new DeathBox(700, -1700, 175, 25, deathBoxColor,"#~#"));
-        buffer.add(new Checkpoint(1925, -1850, 75, 25, checkpointColor));
-        buffer.add(new Box(1800, -1975, 100, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1600, -2050, 50, 50, drabWallColor,"#~#"));
-        buffer.add(new Box(1300, -2050, 25, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1000, -2050, 14, 15, drabWallColor,"#~#"));
-        buffer.add(new Box(700, -2050, 10, 10, drabWallColor,"#~#"));
-        buffer.add(new Box(400, -2050, 7, 7, drabWallColor,"#~#"));
-        buffer.add(new Box(100, -2050, 5, 5, drabWallColor,"#~#"));
-        buffer.add(new Box(0, -2175, 25, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(100, -2316, 200, 16, drabWallColor,"#~#"));
-        buffer.add(new Box(450, -2450, 150, 25, drabWallColor,"#~#"));
-        buffer.add(new Box(1390, -2450, 700, 50, drabWallColor,"#~#"));
-        buffer.add(new Trampoline(1800, -2475, 200, 25, trampolineColor));
-        buffer.add(new FinishLine(1450, -2750, 350, 50, finishLineColor));
-
-        Level level1 = new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(950, 800));
-        levels.add(level1);
-        buffer.clear();
-
-        //Level 1
-        buffer.add(new Box(-100, 800, 600, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(-1000, -500, 1050, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(700, 700, 310, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(1700, 700, 575, 4000, drabWallColor, "#~#"));
-        buffer.add(new DeathBox(495, 1500, 210, 3000, deathBoxColor, "#~-1000picf0.5"));
-        buffer.add(new Box(1000, 400, 50, 4000, drabWallColor, "#~#"));
-        buffer.add(new Box(990, 550, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(3600, 525, 70, 4000, drabWallColor, "#~#"));
-        buffer.add(new Checkpoint(3600f, 515, 70, 10, checkpointColor));
-        buffer.add(new DeathBox(4145, -99, 3500, 10000, deathBoxColor, "#~#"));
-        buffer.add(new Box(4140, -100, 100, 6000, drabWallColor, "-100pls1.25~#"));
-        buffer.add(new Box(3610, -700, 100, 1000, drabWallColor, "+100pls0.3~#"));
-        buffer.add(new Box(3610, -800, 4000, 200, drabWallColor, "#~#"));
-        buffer.add(new DeathBox(3670, 900, 4140 - 3670, 4000, deathBoxColor, "#~#"));
-        buffer.add(new Box(3925, 435, 50, 50, drabWallColor, "#~#"));
-        buffer.add(new Box(3710, 290, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(3950, 190, 20, 5, drabWallColor, "#~#"));
-        buffer.add(new Box(3710, 45, 10, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(4100, 20, 40, 10, drabWallColor, "#~#"));
-        buffer.add(new Box(2900, 600, 200, 50, drabWallColor, "+300picn0.125~#"));
-        buffer.add(new Box(4141, -101, 3501, 5, drabWallColor, "#~#"));
-        buffer.add(new Checkpoint(7400, -111, 100, 10, checkpointColor));
-        buffer.add(new Box(4240, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
-        buffer.add(new Box(4240 + 1600, -700, 1400, 500, drabWallColor, "#~+100picn0.32"));
-        buffer.add(new Trampoline(200, 700, 100, 50, trampolineColor));
-        buffer.add(new Trampoline(100, 150, 100, 50, trampolineColor));
-        buffer.add(new Box(1200, 150, 100, 50, drabWallColor, "#~#"));
-        Level level2 = new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(100, 700));
-        levels.add(level2);
-        buffer.clear();
     }
 
     private void loadCurrentLevel() {
