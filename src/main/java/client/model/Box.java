@@ -3,12 +3,12 @@ package client.model;
 import java.awt.*;
 
 public class Box implements GameObject {
-    private Vector2D pos;
-    private Vector2D originalPos;
-    private Vector2D dim;
-    private Color col;
-    private String[] equations;
-    private Vector2D lastPos;
+    protected Vector2D pos;
+    protected Vector2D originalPos;
+    protected Vector2D dim;
+    protected Color col;
+    protected String[] equations;
+    protected Vector2D lastPos;
 
     public Box(float x, float y, float width, float height, Color color, String equations) {
         this.pos = new Vector2D(x, y);

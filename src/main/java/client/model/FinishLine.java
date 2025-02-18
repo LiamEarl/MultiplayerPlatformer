@@ -2,15 +2,9 @@ package client.model;
 
 import java.awt.*;
 
-public class FinishLine implements GameObject {
-    private Vector2D pos;
-    private Vector2D dim;
-    private Color col;
-
+public class FinishLine extends Box implements GameObject {
     public FinishLine(float x, float y, float width, float height, Color color) {
-        this.pos = new Vector2D(x, y);
-        this.dim = new Vector2D(width, height);
-        this.col = color;
+        super(x, y, width, height, color, "#~#");
     }
     @Override
     public Vector2D getVelocity() {return new Vector2D(0, 0);}
@@ -23,11 +17,5 @@ public class FinishLine implements GameObject {
     @Override
     public Vector2D getPos() {
         return pos;
-    }
-    public Color getColor() {
-        return this.col;
-    }
-    public void setPos(Vector2D pos) {
-        this.pos = pos;
     }
 }

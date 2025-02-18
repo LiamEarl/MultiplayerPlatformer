@@ -38,6 +38,10 @@ public class MathParser {
                     String[] factors = operation.split("pls");
                     value += (float) (Float.parseFloat(factors[0]) * pulse((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
                     continue;
+                }else if(operation.contains("lins")) {
+                    String[] factors = operation.split("lins");
+                    value += (float) (Float.parseFloat(factors[0]) * linearSpike((Float.parseFloat(factors[1]) * ((double) currentTime / 1000) * (3.14*2))));
+                    continue;
                 }
                 value += Float.parseFloat(operation.substring(1));
             } else if(operation.charAt(0) == '*') {
@@ -75,6 +79,11 @@ public class MathParser {
         }else {
             return 1;
         }
+    }
+    static public double linearSpike(double value) {
+        double mapped = value % 6.28;
+        if(mapped < Math.PI) return (1 / Math.PI) * mapped;
+        return -(1 / Math.PI) * (mapped - (2 * Math.PI));
     }
     static public double pulse(double value) {
         double mapped = value % 6.28;

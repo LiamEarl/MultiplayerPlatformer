@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
 
 import static java.lang.Math.round;
 import org.json.JSONArray;
@@ -77,20 +78,26 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         ArrayList<GameObject> buffer = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONArray rowArray = jsonArray.getJSONArray(i);
-
+            Vector2D spawnLoc = new Vector2D(100, 700);
             // Iterate through each object in the row
             for (int j = 0; j < rowArray.length(); j++) {
                 JSONObject jsonObject = rowArray.getJSONObject(j);
 
                 // Get the type of object
                 String type = jsonObject.getString("type");
+                if(type.equals("Spawn")) {
+                    spawnLoc.setX(jsonObject.getInt("x"));
+                    spawnLoc.setY(jsonObject.getInt("y"));
+                    continue;
+                }
+
                 int boxX = jsonObject.getInt("x");
                 int boxY = jsonObject.getInt("y");
                 int boxW = jsonObject.getInt("w");
                 int boxH = jsonObject.getInt("h");
                 String boxEq = jsonObject.has("equation") ? jsonObject.getString("equation") : "#~#";
                 Color boxCol = colors.get(jsonObject.getString("color"));
-                System.out.println(boxEq);
+
                 // Depending on the type, create the appropriate object and add it to the buffer
                 switch (type) {
                     case "Box":
@@ -110,10 +117,10 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
                         break;
                     // Add other cases as needed (for more object types)
                     default:
-                        System.out.println("Unknown object type: " + type);
+                        System.out.println("Unknown object");
                 }
             }
-            levels.add(new Level((ArrayList<GameObject>) buffer.clone(), new Vector2D(900, 750)));
+            levels.add(new Level((ArrayList<GameObject>) buffer.clone(), spawnLoc));
             buffer.clear();
         }
     }
@@ -521,13 +528,14 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
     public void mouseDragged(MouseEvent e) {
         if(this.player == null || this.gameObjects == null) return;
 
-        mouseDragOffset.setXY((e.getX() - (double) getWidth() / 2), (e.getY() - (double) getHeight() / 2));
+        int x = e.getX();
+        int y = e.getY();
+        if(x > getWidth()) x = getWidth();
+        if(x < 0) x = 0;
+        if(y > getHeight()) y = getHeight();
+        if(y < 0) y = 0;
+        mouseDragOffset.setXY((x - (double) getWidth() / 2), (y - (double) getHeight() / 2));
         mouseDragOffset.divide(zoomFactor);
-        if(this.player.getGodMode()) return;
-        if(mouseDragOffset.getX() > 1000) mouseDragOffset.setX(1000);
-        if(mouseDragOffset.getX() < -1000) mouseDragOffset.setX(-1000);
-        if(mouseDragOffset.getY() > 1000) mouseDragOffset.setY(600);
-        if(mouseDragOffset.getY() < -1000) mouseDragOffset.setY(-600);
     }
     @Override
     public void mouseMoved(MouseEvent e) {}
