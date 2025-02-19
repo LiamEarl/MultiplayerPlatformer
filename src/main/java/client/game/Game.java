@@ -14,6 +14,7 @@ import java.util.Vector;
 import static java.lang.Math.round;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.css.ElementCSSInlineStyle;
 import server.Message;
 
 public class Game extends JPanel implements KeyListener, MouseWheelListener, MouseListener, MouseMotionListener {
@@ -431,12 +432,24 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
                 if(recentMessages[id] != null && this.serverConnection != null) {
                     String[] mData = recentMessages[id].getMessage().split(";");
 
-                    double xTransform = topLeft.getX() - (metrics.charWidth('_') * zoomFactor * (((double) mData[0].length() / 2) - 1));
+                    //cut off the Player1: section
+                    String theMessage = mData[0].substring(mData[0].indexOf(":") + 1);
+
+                    double xTransform = topLeft.getX() + (botRight.getX() - topLeft.getX()) / 2;
                     double yTransform = topLeft.getY() - (metrics.charWidth('_') * zoomFactor);
+
+                    int lines = (int) Math.ceil(((double) theMessage.length() / 20));
+
                     g2d.setColor(r.getColor());
                     g2d.translate(xTransform, yTransform);
                     g2d.scale(zoomFactor, zoomFactor);
-                    g2d.drawString(mData[0], 0, 0);
+
+                    for (int i = 0; i < theMessage.length(); i += 20) {
+                        String line = theMessage.substring(i, Math.min(i + 20, theMessage.length()));
+                        int lineY = (int) (-(lines - (i / 20)) * (metrics.charWidth('_') * 1.25));
+                        g2d.drawString(line, -metrics.stringWidth(line) / 2, lineY);
+                    }
+
                     g2d.scale(1 / zoomFactor, 1 / zoomFactor);
                     g2d.translate(-xTransform, -yTransform);
 
