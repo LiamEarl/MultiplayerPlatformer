@@ -4,8 +4,8 @@ import client.model.Vector2D;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
+import static server.GameServer.level;
 
 class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -27,8 +27,10 @@ class ClientHandler implements Runnable {
         this.playerColorCodes = colorCodes;
 
         this.player = new Player(new Vector2D(100, 650), this.playerColorCodes.get(clientId), this.dimensions.get(clientId), clientId);
-        uploadToClient(new Ping());
-        Player[] initial = new Player[10];
+
+        Object[] initial = new Object[12];
+        initial[10] = new Ping();
+        initial[11] = new Message("CurrentLevel;" + level);
         initial[clientId] = this.player;
         uploadToClient(initial);
     }

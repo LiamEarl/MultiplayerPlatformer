@@ -15,7 +15,8 @@ import java.util.Collections;
 public class GameServer {
     private static final ClientHandler[] clientHandlers = new ClientHandler[10];
     private static Object[] updates = new Object[11];
-    private static int level = 0;
+    static int level = 0;
+    static long lastCompletedLevel = System.currentTimeMillis();
 
     public static void main(String[] args) {
 
@@ -106,6 +107,8 @@ public class GameServer {
     private static Object[] nextLevelListener(Object[] updates) {
         Object[] output = updates.clone();
 
+        if(System.currentTimeMillis() - lastCompletedLevel < 5000) return output;
+
         boolean hasClients = false;
 
         for(ClientHandler client : GameServer.clientHandlers) {
@@ -130,7 +133,7 @@ public class GameServer {
         }
 
         level ++;
-
+        lastCompletedLevel = System.currentTimeMillis();
         output[10] = new Message("CurrentLevel;" + level);
         return output;
     }

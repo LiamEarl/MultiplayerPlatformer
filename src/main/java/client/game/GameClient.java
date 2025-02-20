@@ -26,6 +26,8 @@ public class GameClient {
             long lastUpdate = System.currentTimeMillis();
             long sendToServerTimer = System.currentTimeMillis();
             float fps;
+            for(float i = 0; i < 6.28f; i+= 0.01f)
+                System.out.println(MathParser.linearDropoff(i));
 
             boolean previouslyConnected = false;
 

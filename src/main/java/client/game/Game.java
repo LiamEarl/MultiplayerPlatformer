@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 import static java.lang.Math.round;
 import org.json.JSONArray;
@@ -80,6 +79,7 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
         colors.put("finishLineColor", new Color(26, 140, 41));
         colors.put("drabWallColor", new Color(32, 32, 45));
         colors.put("trampolineColor", new Color(255, 213, 0));
+        colors.put("iceColor", new Color(4, 169, 222));
 
         ArrayList<GameObject> buffer = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -120,6 +120,9 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
                         break;
                     case "FinishLine":
                         buffer.add(new FinishLine(boxX, boxY, boxW, boxH, boxCol));
+                        break;
+                    case "Ice":
+                        buffer.add(new Ice(boxX, boxY, boxW, boxH, boxCol, boxEq));
                         break;
                     // Add other cases as needed (for more object types)
                     default:
@@ -273,7 +276,8 @@ public class Game extends JPanel implements KeyListener, MouseWheelListener, Mou
             if (pPos.getY() < oPos.getY()) {
                 pPos.addXY(0, -overlapY);
                 if(dynamic instanceof Player) ((Player) dynamic).setGrounded(true);
-                dynamic.getVelocity().setXY(dynamic.getVelocity().getX() * (1 - 0.03f * dtMod), oVel.getY() * 0.9f);
+                float xModifier = (float) ((toCollide instanceof Ice) ? dynamic.getVelocity().getX() : dynamic.getVelocity().getX() * (1 - 0.03f * dtMod));
+                dynamic.getVelocity().setXY(xModifier, oVel.getY() * 0.9f);
                 if (toCollide instanceof Trampoline) {
                     dynamic.getVelocity().addXY(0, -36);
                     if(dynamic instanceof Player) ((Player) dynamic).setGrounded(false);

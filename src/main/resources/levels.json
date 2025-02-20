@@ -1,4 +1,5 @@
 [
+
   [
     {"type": "Spawn", "x": -10, "y": -200},
     {"type": "Box", "x":-400, "y":0, "w":800, "h":100, "color": "drabWallColor"},
@@ -7,7 +8,7 @@
     {"type": "Box", "x":1200, "y":0, "w":300, "h":100, "color": "drabWallColor"},
     {"type": "Box", "x":1500, "y":-125, "w":100, "h":225, "color": "drabWallColor"},
     {"type": "Box", "x":1700, "y":-125, "w":300, "h":100, "color": "drabWallColor"},
-    {"type": "DeathBox", "x":1600, "y":-125, "w":100, "h":225, "color": "deathBoxColor", "equation": "#~-200fpls0.2"},
+    {"type": "DeathBox", "x":1600, "y":-125, "w":100, "h":225, "color": "deathBoxColor", "equation": "#~-1500fpls0.2"},
     {"type": "Box", "x":2300, "y":-125, "w":300, "h":100, "color": "drabWallColor"},
     {"type": "Box", "x":3000, "y":-125, "w":400, "h":100, "color": "drabWallColor"},
     {"type": "Box", "x":4100, "y":-100, "w":400, "h":200, "color": "drabWallColor", "equation": "+300picn0.125~#"},
@@ -21,6 +22,47 @@
     {"type": "DeathBox", "x":6700, "y":-400, "w":100, "h":1700, "color": "deathBoxColor"},
     {"type": "DeathBox", "x":6950, "y":-400, "w":100, "h":1700, "color": "deathBoxColor"},
     {"type": "FinishLine", "x":6700, "y":1300, "w":350, "h":75, "color": "finishLineColor"}
+  ],
+  [
+    {"type": "Spawn", "x": -750, "y": -200},
+    {"type": "Ice", "x":-800, "y":0, "w":1000, "h":100, "color": "iceColor"},
+    {"type": "DeathBox", "x":0, "y":-100, "w":100, "h":100, "color": "deathBoxColor"},
+    {"type": "Ice", "x":600, "y":0, "w":1000, "h":100, "color": "iceColor"},
+    {"type": "Checkpoint", "x":-800, "y":-25, "w":200, "h":25, "color": "checkpointColor"},
+    {"type": "Box", "x":1500, "y":-150, "w":100, "h":150, "color": "drabWallColor"},
+    {"type": "Box", "x":1425, "y":-100, "w":75, "h":50, "color": "drabWallColor"},
+    {"type": "DeathBox", "x":1426, "y":-87, "w":33, "h":27, "color": "deathBoxColor", "equation": "-1426lind0.55~#"},
+    {"type": "Box", "x":2000, "y":-150, "w":200, "h":150, "color": "drabWallColor"},
+    {"type": "DeathBox", "x":1700, "y":-75, "w":200, "h":775, "color": "deathBoxColor", "equation": "#~-300lins0.4"},
+    {"type": "Box", "x":1625, "y":-875, "w":0, "h":0, "color": "drabWallColor"},
+    {"type": "DeathBox", "x":1700, "y":-1100, "w":200, "h":775, "color": "deathBoxColor", "equation": "#~-300lins0.4"},
+    {"type": "Ice", "x":2600, "y":-150, "w":200, "h":150, "color": "iceColor"},
+    {"type": "Ice", "x":3200, "y":-150, "w":200, "h":150, "color": "iceColor"},
+    {"type": "Ice", "x":4100, "y":-150, "w":200, "h":150, "color": "iceColor"},
+    {"type": "Ice", "x":5200, "y":-150, "w":800, "h":150, "color": "iceColor"},
+    {"type": "DeathBox", "x":5800, "y":-600, "w":200, "h":450, "color": "deathBoxColor"},
+    {"type": "DeathBox", "x":5050, "y":-150, "w":25, "h":550, "color": "deathBoxColor"},
+    {"type": "Box", "x":5050, "y":400, "w":1050, "h":100, "color": "drabWallColor"},
+    {"type": "Trampoline", "x":6000, "y":375, "w":100, "h":25, "color": "trampolineColor"},
+    {"type": "Box", "x":6700, "y":100, "w":300, "h":100, "color": "drabWallColor"},
+    {"type": "Checkpoint", "x":5075, "y":375, "w":150, "h":25, "color": "checkpointColor"},
+    {"type": "Box", "x":7400, "y":100, "w":300, "h":100, "color": "drabWallColor"},
+    {"type": "Box", "x":7900, "y":0, "w":200, "h":100, "color": "drabWallColor"},
+    {"type": "Box", "x":8200, "y":-150, "w":100, "h":50, "color": "drabWallColor"},
+    {"type": "Box", "x":8500, "y":-200, "w":200, "h":50, "color": "drabWallColor"},
+    {"type": "Box", "x":7825, "y":25, "w":75, "h":50, "color": "drabWallColor"},
+    {"type": "DeathBox", "x":7827, "y":39, "w":29, "h":25, "color": "deathBoxColor", "equation": "-1426lind1.2~#"},
+    {"type": "Box", "x":9200, "y":-200, "w":500, "h":100, "color": "drabWallColor"},
+    {"type": "Box", "x":9700, "y":-725, "w":200, "h":75, "color": "drabWallColor"},
+    {"type": "Ice", "x":10650, "y":-375, "w":200, "h":25, "color": "iceColor", "equation": "-700lins0.25~#"},
+    {"type": "Ice", "x":9900, "y":-225, "w":200, "h":25, "color": "iceColor", "equation": "+900lins0.25~#"},
+    {"type": "Ice", "x":9900, "y":-525, "w":200, "h":25, "color": "iceColor", "equation": "+900lins0.25~#"},
+    {"type": "Ice", "x":10650, "y":-650, "w":200, "h":25, "color": "iceColor", "equation": "-700lins0.25~#"},
+    {"type": "Box", "x":8975, "y":-725, "w":350, "h":75, "color": "drabWallColor"},
+    {"type": "Box", "x":8625, "y":-775, "w":25, "h":100, "color": "drabWallColor"},
+    {"type": "Box", "x":8025, "y":-725, "w":300, "h":75, "color": "drabWallColor"},
+    {"type": "Trampoline", "x":8025, "y":-750, "w":125, "h":25, "color": "trampolineColor"},
+    {"type": "FinishLine", "x":6650, "y":-750, "w":850, "h":50, "color": "finishLineColor"}
   ],
   [
     {"type": "Spawn", "x": 100, "y": 700},
@@ -122,7 +164,7 @@
     {"type": "Box", "x":2400, "y":0, "w":1200, "h":400, "color": "drabWallColor"},
     {"type": "Box", "x":3600, "y":-3100, "w":0, "h":0, "color": "drabWallColor"},
     {"type": "Box", "x":3600, "y":-3100, "w":200, "h":3500, "color": "drabWallColor"},
-    {"type": "DeathBox", "x":2400, "y":25, "w":1200, "h":8425, "color": "deathBoxColor", "equation": "#~-3100fpls0.0072"},
+    {"type": "DeathBox", "x":2400, "y":25, "w":1200, "h":8425, "color": "deathBoxColor", "equation": "#~-3100fpls0.0077"},
     {"type": "Box", "x":2600, "y":-100, "w":100, "h":25, "color": "drabWallColor"},
     {"type": "Box", "x":2800, "y":-200, "w":75, "h":25, "color": "drabWallColor"},
     {"type": "Box", "x":3000, "y":-300, "w":100, "h":25, "color": "drabWallColor"},
@@ -163,7 +205,6 @@
     {"type": "Box", "x":8625, "y":-1700, "w":975, "h":300, "color": "drabWallColor"},
     {"type": "FinishLine", "x":9200, "y":-1750, "w":400, "h":50, "color": "finishLineColor"}
   ],
-
   [
     {"type": "Spawn", "x": 900, "y": 750},
     { "color": "drabWallColor", "type": "Box", "x": 0, "y": 1000, "w": 2000, "h": 1000 },
@@ -250,5 +291,4 @@
     { "color": "trampolineColor", "type": "Trampoline", "x": 1800, "y": -2475, "w": 200, "h": 25 },
     { "color": "finishLineColor", "type": "FinishLine", "x": 1450, "y": -2750, "w": 350, "h": 50 }
   ]
-
 ]
