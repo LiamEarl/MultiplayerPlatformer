@@ -5,16 +5,25 @@ import client.utility.Vector2D;
 import java.awt.*;
 import java.io.Serializable;
 
+/**
+ * Player class that is responsible for managing the details of a player.
+ */
 public class Player implements GameObject, Serializable {
-    private Vector2D pos;
-    private Vector2D vel, dim, spawnPoint, lastPos;
-    private Color col;
-    private float speed;
-    private int id;
-    private boolean grounded = false;
-    private boolean god = false;
-    private String communication;
+    private Vector2D pos, vel, dim, spawnPoint; // Vectors containing player information
+    private Color col; // Player color
+    private float speed; // Player movement speed
+    private int id; // Player ID, 0 - 9
+    private boolean grounded = false; // Whether the player is touching ground
+    private boolean god; // If the player is in spectate mode
+    private String communication; // A new message that the player sent
 
+    /**
+     * Creates a new Player Object
+     * @param position Position of the player
+     * @param color Color of the player
+     * @param dimensions Player dimensions
+     * @param id ID of the player, 0 - 9
+     */
     public Player(Vector2D position, Color color, Vector2D dimensions, int id) {
         this.pos = position;
         this.vel = new Vector2D(0, 0);
@@ -28,7 +37,7 @@ public class Player implements GameObject, Serializable {
     }
 
     @Override
-    public void update(float dtMod, long currentTime) {
+    public void update(float dtMod, long currentTime) { // Updates the position of the player based on the velocity
         if(god) return;
         this.pos.setXY(this.pos.getX() + (this.vel.getX() * dtMod), this.pos.getY() + (this.vel.getY() * dtMod));
         this.vel.scale(1f - (0.02f * dtMod));
@@ -36,7 +45,7 @@ public class Player implements GameObject, Serializable {
         this.grounded = false;
     }
     @Override
-    public boolean equals(Object p) {
+    public boolean equals(Object p) { // If two player objects are equal
         if(!(p instanceof Player)) return false;
         Player player = (Player) p;
         if(player.getId() == this.getId()) return true;

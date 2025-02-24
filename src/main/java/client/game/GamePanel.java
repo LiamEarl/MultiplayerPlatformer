@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import static java.lang.Math.round;
 import client.utility.Vector2D;
-import server.Message;
+import client.utility.Message;
 
 /**
  * GamePanel is the GUI for rendering the game scene, handling user input,

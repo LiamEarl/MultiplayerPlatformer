@@ -3,6 +3,9 @@ package client.utility;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Static class that evaluates custom functions
+ */
 public class OperationEvaluator {
 
     private static final double TWO_PI = Math.PI * 2; // 2PI ease of use field

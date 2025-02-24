@@ -9,6 +9,11 @@ import java.io.Serializable;
 public class Vector2D implements Serializable {
     private double x, y;
 
+    /**
+     * Creates a new Vector Object
+     * @param x value to store
+     * @param y value to store
+     */
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
@@ -18,7 +23,7 @@ public class Vector2D implements Serializable {
         this.y = v.getY();
     }
 
-    public Vector2D copy() {
+    public Vector2D copy() { // copies a vector
         return new Vector2D(this.x, this.y);
     }
 
@@ -35,11 +40,11 @@ public class Vector2D implements Serializable {
         this.y -= sy;
     }
 
-    public double length() {
+    public double length() { // Gets the magnitude of the vector
         return (float) Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    public void normalize() {
+    public void normalize() { // Sets the vector to a length of 1 while preserving it's proportions
         double len = length();
         if (len != 0) {
             this.x /= len;
