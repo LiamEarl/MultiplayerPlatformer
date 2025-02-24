@@ -1,8 +1,11 @@
-package client.model;
+package client.utility;
 
 import java.io.Serializable;
-import java.util.Vector;
 
+/**
+ * Vector class that stores an x value and y value plus has some
+ * methods to manipulate those two values. Pretty self-explanatory.
+ */
 public class Vector2D implements Serializable {
     private double x, y;
 

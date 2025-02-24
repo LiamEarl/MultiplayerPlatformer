@@ -1,7 +1,6 @@
 package client.game;
-import client.model.GameObject;
-import client.model.Player;
-import client.model.Vector2D;
+import client.objects.Player;
+import client.utility.Vector2D;
 import server.Message;
 import server.Ping;
 
@@ -12,17 +11,15 @@ class ServerHandler implements Runnable {
     private final Socket serverSocket;
     private final ObjectInputStream in;
     private final ObjectOutputStream out;
-    private Game game;
     private Player mainPlayer;
     private Vector2D lastVelocity;
     private long serverOffset = 0;
     private boolean connected;
 
-    ServerHandler(Socket serverSocket, Game game) throws IOException {
+    ServerHandler(Socket serverSocket) throws IOException {
         this.serverSocket = serverSocket;
         this.out = new ObjectOutputStream(serverSocket.getOutputStream());
         this.in = new ObjectInputStream(serverSocket.getInputStream());
-        this.game = game;
         this.connected = true;
         this.lastVelocity = new Vector2D(0, 0);
     }
@@ -65,7 +62,7 @@ class ServerHandler implements Runnable {
         if(message[0].equals("SyncServer")) {
             this.serverOffset = System.currentTimeMillis() - Long.parseLong(message[1]);
         }else if(message[0].equals("CurrentLevel")) {
-            game.setLevel(Integer.parseInt(message[1]));
+            GameClient.setLevel(Integer.parseInt(message[1]));
         }if(message[0].equals("Communication")) {}
     }
 
@@ -74,12 +71,12 @@ class ServerHandler implements Runnable {
 
         int id = playerUpdate.getId();
 
-        if (this.game.getGameObjects()[id] == null) {
-            this.game.getGameObjects()[id] = playerUpdate;
+        if (GameClient.getGameObjects()[id] == null) {
+            GameClient.getGameObjects()[id] = playerUpdate;
             if(this.mainPlayer == null) this.mainPlayer = playerUpdate;
             System.out.println("INITIALIZED PLAYER " + playerUpdate.getId());
         } else {
-            Player ghost = (Player) this.game.getGameObjects()[id];
+            Player ghost = (Player) GameClient.getGameObjects()[id];
             ghost.setPos(playerUpdate.getPos());
             ghost.setVel(playerUpdate.getVelocity());
             ghost.setGodMode(playerUpdate.getGodMode());

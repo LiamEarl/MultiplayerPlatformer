@@ -1,7 +1,7 @@
 package server;
 
-import client.model.Player;
-import client.model.Vector2D;
+import client.objects.Player;
+import client.utility.Vector2D;
 
 import java.awt.*;
 import java.io.IOException;
@@ -105,9 +105,8 @@ public class GameServer {
     }
 
     private static Object[] nextLevelListener(Object[] updates) {
+        if(System.currentTimeMillis() - lastCompletedLevel < 5000) return updates;
         Object[] output = updates.clone();
-
-        if(System.currentTimeMillis() - lastCompletedLevel < 5000) return output;
 
         boolean hasClients = false;
 

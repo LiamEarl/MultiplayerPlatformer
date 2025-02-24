@@ -1,6 +1,6 @@
 package server;
-import client.model.Player;
-import client.model.Vector2D;
+import client.objects.Player;
+import client.utility.Vector2D;
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;

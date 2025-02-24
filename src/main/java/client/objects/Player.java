@@ -1,4 +1,6 @@
-package client.model;
+package client.objects;
+
+import client.utility.Vector2D;
 
 import java.awt.*;
 import java.io.Serializable;
