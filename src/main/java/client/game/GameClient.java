@@ -3,7 +3,6 @@ import client.objects.*;
 import client.utility.Vector2D;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.awt.*;
 import java.io.*;
 import java.net.Socket;
@@ -13,34 +12,41 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class GameClient {
+    // Y value where if a player descends beneath it, they will perish.
     private static final int PLAYER_RESET_ZONE = 3000;
+
+    // Variable used for Delta Time calculation. Value is in milliseconds, default is 60 fps.
     private static final float ASSUMED_UPDATE_TIME = 16;
+
+    // ArrayList containing all level objects.
     private static final ArrayList<Level> levels = new ArrayList<>();
+
+    // Current Level Index
     private static int currentLevel = 0;
+
+    // Array containing all game objects. The number of game objects per level is capped to 300 for now.
     private static final GameObject[] gameObjects = new GameObject[300];
+
+    // Player object containing the player that this client controls
     private static Player clientPlayer = null;
+
+    // Serverhandler that manages the connection with the server
     static ServerHandler serverConnection = null;
+
+    // GamePanel object instance that handles the GUI
     static GamePanel gamePanel = new GamePanel(gameObjects);
 
-    private static ServerHandler handleServerConnection(String ip, int port) throws IOException {
-        Socket serverSocket = new Socket(ip, port); // Server IP and port the-tower.net
-        System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
-        ServerHandler serverHandler = new ServerHandler(serverSocket);
-        Thread serverThread = new Thread(serverHandler);
-        serverThread.start();
-        return serverHandler;
-    }
+    // If the client was at one point connected to a server
+    private static boolean previouslyConnected = false;
 
+    // Main method
     public static void main(String[] args) {
         try {
             int currentTick = 0;
-
             long lastUpdate = System.currentTimeMillis();
             long sendToServerTimer = System.currentTimeMillis();
             float fps;
 
-
-            boolean previouslyConnected = false;
 
             while(true) {
                 long dt = System.currentTimeMillis() - lastUpdate;
@@ -69,37 +75,51 @@ public class GameClient {
 
                     Thread.sleep(16);
                 }else {
-                    previouslyConnected = true;
+                    Thread.sleep(1);
 
-                    if(!serverConnection.getConnected()) {
-                        serverConnection = null;
-                        continue;
-                    }
-
-                    if(!gamePanel.initializedPlayer()) {
-                        if(serverConnection.getPlayerId() != -1) {
-                            clientPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
-                            gamePanel.setClientPlayer(clientPlayer);
-                        }
-
-                        createLevels();
-                        loadCurrentLevel();
-
-                        Thread.sleep(16);
-                    }else {
-                        gamePanel.handlePlayerMovementInputs(dtMod);
-                        updateGameObjects(dtMod, serverConnection.getServerTime());
-                        checkPlayerCollisions(dtMod);
-                        gamePanel.renderScene(fps);
-                        sendToServerTimer = serverConnection.handleOutgoingUpdates(sendToServerTimer);
-
-                        Thread.sleep(1);
-                    }
+                    sendToServerTimer = gameLoop(dtMod, sendToServerTimer, fps);
                 }
             }
         }catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    static long gameLoop(float dtMod, long sendToServerTimer, float fps) throws IOException {
+        previouslyConnected = true;
+
+        if(!serverConnection.getConnected()) {
+            serverConnection = null;
+            return sendToServerTimer;
+        }
+
+        if(!gamePanel.initializedPlayer()) {
+            if(serverConnection.getPlayerId() != -1) {
+                clientPlayer = (Player) gameObjects[serverConnection.getPlayerId()];
+                gamePanel.setClientPlayer(clientPlayer);
+            }
+
+            createLevels();
+
+            loadCurrentLevel();
+        }else {
+            gamePanel.handlePlayerMovementInputs(dtMod);
+            updateGameObjects(dtMod, serverConnection.getServerTime());
+            checkPlayerCollisions(dtMod);
+            gamePanel.renderScene(fps);
+            return serverConnection.handleOutgoingUpdates(sendToServerTimer);
+        }
+
+        return  sendToServerTimer;
+    }
+
+    private static ServerHandler handleServerConnection(String ip, int port) throws IOException {
+        Socket serverSocket = new Socket(ip, port); // Server IP and port the-tower.net
+        System.out.println("Server Connected At IP: " + serverSocket.getRemoteSocketAddress());
+        ServerHandler serverHandler = new ServerHandler(serverSocket);
+        Thread serverThread = new Thread(serverHandler);
+        serverThread.start();
+        return serverHandler;
     }
 
     static void updateGameObjects(float dtMod, long currentTime) {
